@@ -7,7 +7,6 @@
 - [ ] Implement date slider
 - [ ] Maintain legend width when drilled down
 - [ ] Maintain YTick label width even when single-digit values
-- [ ]
  
 ### Features
 - [ ] Add team records / strength of schedule
