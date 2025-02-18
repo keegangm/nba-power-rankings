@@ -121,7 +121,7 @@ h3{
 #graph-subdiv{
     background-color: white;
     border-radius: var(--bordrad);
-    padding: 6px;
+    padding: 10px;
 }
 
 #button_groups{

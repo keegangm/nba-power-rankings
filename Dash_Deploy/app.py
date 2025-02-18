@@ -1,17 +1,18 @@
+import os
 import sys
-#sys.path.append('/Users/keegan/Projects/nba_reference/nba_modules')
-sys.path.append('/Users/keegan/Projects/nba_reference')
+import subprocess
 
+# Dash imports
 from dash import Dash, dcc, html, callback, Output, Input, State
 from datetime import datetime as dt
 import pandas as pd
 import numpy as np
-import argparse
 import plotly.graph_objects as go
-import nba_modules.datemodule as datemod
-import nba_modules.nba_teams as teams
+
+# Other imports
+import support.nba_teams as teams
 import glob
-import os
+from dateutil.parser import parse
 
 WEEK_REFERENCE_PATH = '/Users/keegan/Projects/nba_reference/nba_weeks_ref.csv'
 def find_latest_file(folder, extension=''):
@@ -61,8 +62,22 @@ def create_and_merge_rank_week(ranking_file):
     wk['sunday'] = pd.to_datetime(wk['sunday'])
 
     df = pd.merge(rk, wk[['sunday', 'nba_week']], on='sunday', how='left')
-
     return df
+
+#teams_filename = '/Users/keegan/Projects/nba_reference/NBA_Teams.csv'
+
+
+
+def clean_date(raw_date=None):
+    """ Get an external-friendly date in format 'Jan 24, 2025'. """
+    if raw_date is not None:
+        input_date = parse(raw_date)
+    else:
+        input_date = dt.today()
+
+    parsed_date = input_date.strftime("%b %d, %Y")
+    return parsed_date
+
 def create_season_rks_df(df: pd.DataFrame):
     """Filter the DataFrame to only include rows with valid NBA weeks."""
     df = df[df['nba_week'].notna()]
@@ -200,15 +215,17 @@ def make_fig(df_piv_rk):
             family="IBM Plex Mono"
         )),
         legend=dict(
-            title = dict(text="<b>NBA Teams</b>"),
             x=0.99,
             y=1,
-            itemwidth=30,
-            #itemheight=50,
+            #itemwidth=420,
+            title = dict(
+                text="<b>NBA Teams</b>",
+                ),
+                #xanchor='center'),
             xanchor='left',
             yanchor="top",
             font=dict(
-                size=13,
+                size=12,
                 weight='normal',
 
             )
@@ -297,7 +314,7 @@ app.layout = html.Div([
     html.Div(id="text-attribution",
              children=[
                  dcc.Markdown('''Created by [Keegan Morris](https://keegan-morris.com/)''',link_target="_blank", id='attrib-markdown'),
-                 html.P(f"Updated {datemod.clean_date()}", id='attrib-date')
+                 html.P(f"Updated {clean_date()}", id='attrib-date')
              ]),
 ], id='super-div')
 
