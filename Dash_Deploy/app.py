@@ -31,7 +31,7 @@ WEEK_REFERENCE_PATH = 'Dash_Deploy/support/data/nba_weeks_ref.csv'
 #    else:
 #        return f"Found no files with extension '{extension}' in '{folder}'"
 
-ranking_file = 'Dash_Deploy/support/data/latest_powerrankings.csv'
+ranking_filepath = 'Dash_Deploy/support/data/latest_powerrankings.csv'
 
 def read_nba_week():    
     """Read NBA Week from reference file."""
@@ -54,7 +54,7 @@ def most_recent_sunday(date):
     return date - pd.to_timedelta(date.weekday() + 1, unit='D')
 def create_and_merge_rank_week(ranking_file):
 
-    rk = read_ranking_file(ranking_file)
+    rk = read_ranking_file(ranking_filepath)
     wk = read_nba_week()
 
     rk['sunday'] = rk['date'].apply(most_recent_sunday)
