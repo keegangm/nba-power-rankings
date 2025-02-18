@@ -14,7 +14,7 @@ import support.nba_teams as teams
 import glob
 from dateutil.parser import parse
 
-WEEK_REFERENCE_PATH = '/Users/keegan/Projects/nba_reference/nba_weeks_ref.csv'
+WEEK_REFERENCE_PATH = 'Dash_Deploy/support/data/nba_weeks_ref.csv'
 def find_latest_file(folder, extension=''):
     """Find latest file in specified folder."""
     if extension:
@@ -31,7 +31,7 @@ def find_latest_file(folder, extension=''):
     else:
         return f"Found no files with extension '{extension}' in '{folder}'"
 
-ranking_file = find_latest_file('/Users/keegan/Projects/NBA Power Rankings/Weekly_PowerRankings', 'csv')
+ranking_file = 'Dash_Deploy/support/data/latest_powerrankings.csv'
 
 def read_nba_week():    
     """Read NBA Week from reference file."""
