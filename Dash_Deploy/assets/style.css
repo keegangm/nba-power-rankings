@@ -1,0 +1,194 @@
+/* style.css */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+
+:root{
+    --graybg: rgb(233, 233, 233);
+    --colorbg: #aaaaaa;
+    --whitebg: #f9f9f9;
+    --bordrad: 13px;
+    --fontcolor: #2d2d2d;
+    --sec-fontcolor: rgb(92, 92, 92);
+    --text-font: "IBM Plex Sans", Arial, Helvetica, sans-serif;
+    --tech-font: "IBM Plex Mono", 'Courier New', Courier, monospace;
+}
+
+body{
+    font-family: var(--tech-font);
+    background-color: var(--graybg);
+    color: var(--fontcolor) !important;
+    max-width: 1200px;
+    margin: auto;
+}
+
+button{
+    color: green;
+    /*font-size: 200px;*/
+}
+
+#subtitle {
+    color: var(--sec-fontcolor);
+    margin-top: 20px;
+}
+
+h1{
+    /*color: tomato;*/
+    font-family: var(--text-font);
+    margin-bottom: 0px;
+}
+
+h5 {
+    /*color: orange;*/
+    font-family: var(--text-font);
+    text-align: center;
+}
+
+h3{
+    font-family: var(--tech-font);
+    color: var(--fontcolor);
+    font-weight: 500;
+    font-size: 17px;
+}
+
+#pr-graph{
+    margin-top: 15px;
+    width: 100%;
+}
+
+.button-grp{
+    /*display: inline-block;*/
+    max-width: 400px;
+    /*display: block;*/
+    text-align: center;
+    align-content: top;
+    /*padding: 0 25px 25px 25px;*/
+    /*background-color: var(--whitebg);
+    border-radius: var(--bordrad);*/
+    margin-bottom: 15px;
+    padding: 0px 15px 0px 15px;
+    border-radius: 5px;
+}
+.button-label {
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+    border-bottom: 2px solid var(--fontcolor);
+    font-size: 14px;
+}
+
+.button-array {
+    /*display: block;*/
+    /*justify-content: center;*/
+    text-align: center;
+    margin-top: 0px;
+    padding-top: 0px;
+    /*margin: 15px;*/
+    /*width: 100%;*/
+    /*margin: 0 15px 0 15px;*/
+    /*padding-left: 15px;
+    padding-right: 15px;*/
+}
+
+#page-header{
+    padding: 10px 0 15px 25px;
+    margin-top: 45px;
+    margin-bottom: 25px;
+    line-height: 15px;
+    background-color: var(--whitebg);
+    border-radius: var(--bordrad);
+
+}
+
+#lower-section {
+    background-color: var(--whitebg);
+    padding-top: 12px;
+    margin-top: 30px; 
+    margin-bottom: 35px;
+    border-radius: var(--bordrad);
+}
+#graph-div{
+    /*border: 5px solid red;*/
+    /*background-color: var(--colorbg);*/
+    /*padding: 20px 15px;*/
+    border-radius: var(--bordrad);
+    /*margin: -5px;*/
+    /*margin-top: 15px;*/
+    /*padding: 5px 0;*/
+}
+
+#super-div{
+    margin: 5px;
+}
+
+#graph-subdiv{
+    background-color: white;
+    border-radius: var(--bordrad);
+    padding: 6px;
+}
+
+#button_groups{
+    /*color: green !important;
+    background-color: aqua;*/
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    margin-top: 0px;
+    /*margin: 5px;*/
+    /*padding: 20px;*/
+}
+.dcc-radio label, .dcc-checklist label, .radio-label, .check-label {
+    /*font-family: 'Arial', sans-serif;*/
+    font-size: 12px;
+    font-weight: normal;
+    color: var(--fontcolor);
+    align-content: center;
+    /*padding-left: 23px;*/
+    justify-content: center;
+}
+
+.footnote{
+    font-size: 10px;
+    text-align: right;
+    font-style: italic;
+    color: rgb(88, 88, 88);
+    margin-top: 15px;
+    margin-left:5px; 
+    /*margin-bottom: 3px;*/
+}
+
+.section-head{
+    /*color: fuchsia;*/
+    /*justify-content: center;*/
+    text-align: center;
+    /*margin-top: 35px;*/
+    /*margin-bottom: 5px;*/
+    /*font-family: var(--text-font);*/
+}
+
+#section-head-filters{
+    margin-bottom: 0px;
+}
+
+.section-head-div{
+    width: 100%;
+    margin-top: 45px;
+    
+}
+
+#text-attribution {
+    font-size: 11px;
+    font-style: italic;
+    text-align:right;
+    padding-right: 20px;
+    line-height: 3px;
+    display:block;
+}
+
+#attrib-markdown{
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+}
+
+#attrib-date{
+    padding-top: 0px;
+    margin-top:0px;
+    margin-bottom: 45px;
+}
