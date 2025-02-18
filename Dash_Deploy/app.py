@@ -15,21 +15,21 @@ import glob
 from dateutil.parser import parse
 
 WEEK_REFERENCE_PATH = 'Dash_Deploy/support/data/nba_weeks_ref.csv'
-def find_latest_file(folder, extension=''):
-    """Find latest file in specified folder."""
-    if extension:
-        file_location = folder+ '/*.' + extension
-    else:
-        file_location = folder + '/*' + extension
-    list_of_files = glob.glob(file_location)
+#def find_latest_file(folder, extension=''):
+#    """Find latest file in specified folder."""
+#    if extension:
+#        file_location = folder+ '/*.' + extension
+#    else:
+#        file_location = folder + '/*' + extension
+#    list_of_files = glob.glob(file_location)
 
-    if list_of_files:
-        latest_file = max(list_of_files, key=os.path.getctime)
-        #print(latest_file)
-        return latest_file
+#    if list_of_files:
+#        latest_file = max(list_of_files, key=os.path.getctime)
+#        #print(latest_file)
+#        return latest_file
 
-    else:
-        return f"Found no files with extension '{extension}' in '{folder}'"
+#    else:
+#        return f"Found no files with extension '{extension}' in '{folder}'"
 
 ranking_file = 'Dash_Deploy/support/data/latest_powerrankings.csv'
 
@@ -112,7 +112,7 @@ def create_rk_pt(df: pd.DataFrame):
 
     #rk_pt will be input for graphs
 def df_string_for_graph():
-    ranking_file = find_latest_file('/Users/keegan/Projects/NBA Power Rankings/Weekly_PowerRankings', 'csv')
+    ranking_file = ranking_file
     df = create_season_rks_df(create_and_merge_rank_week(ranking_file))
     rk_pt = create_rk_pt(df)
   
