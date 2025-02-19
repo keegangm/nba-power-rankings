@@ -14,7 +14,7 @@ import support.nba_teams as teams
 import glob
 from dateutil.parser import parse
 
-WEEK_REFERENCE_PATH = '/support/data/nba_weeks_ref.csv'
+WEEK_REFERENCE_PATH = 'support/data/nba_weeks_ref.csv'
 #def find_latest_file(folder, extension=''):
 #    """Find latest file in specified folder."""
 #    if extension:
@@ -31,7 +31,7 @@ WEEK_REFERENCE_PATH = '/support/data/nba_weeks_ref.csv'
 #    else:
 #        return f"Found no files with extension '{extension}' in '{folder}'"
 
-ranking_filepath = '/support/data/latest_powerrankings.csv'
+ranking_filepath = 'support/data/latest_powerrankings.csv'
 
 def read_nba_week():    
     """Read NBA Week from reference file."""
@@ -71,7 +71,7 @@ def create_and_merge_rank_week(ranking_file):
 #teams_filename = '/Users/keegan/Projects/nba_reference/NBA_Teams.csv'
 
 def read_nba_teams_ref():
-    nba_teams_ref = pd.read_csv('/support/data/nba_teams_data.csv')
+    nba_teams_ref = pd.read_csv('support/data/nba_teams_data.csv')
     return nba_teams_ref
 
 #print(read_nba_teams_ref())
