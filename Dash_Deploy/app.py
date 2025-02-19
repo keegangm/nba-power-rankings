@@ -36,25 +36,29 @@ ranking_filepath = 'Dash_Deploy/support/data/latest_powerrankings.csv'
 def read_nba_week():    
     """Read NBA Week from reference file."""
     return pd.read_csv(WEEK_REFERENCE_PATH, parse_dates=['sunday'], dtype={'nba_week': int})
+
 def read_ranking_file(ranking_file):
     """Read NBA Ranking file"""
     rk = pd.read_csv(ranking_file, parse_dates=['date'], date_format="%y%m%d") # 02-Dec-24
     return rk
 today = dt.today()
+
 def get_nba_week_no(date=today):
     """Get NBA Week number"""
     wk = read_nba_week()
     nba_week_no = wk[wk['sunday'] <= date].nba_week.max()
 
     return nba_week_no
+
 def most_recent_sunday(date):
     """Find date of most recent Sunday."""
     date = pd.to_datetime(date)
     #return date
     return date - pd.to_timedelta(date.weekday() + 1, unit='D')
+
 def create_and_merge_rank_week(ranking_file):
 
-    rk = read_ranking_file(ranking_filepath)
+    rk = read_ranking_file(ranking_file)
     wk = read_nba_week()
 
     rk['sunday'] = rk['date'].apply(most_recent_sunday)
@@ -66,7 +70,11 @@ def create_and_merge_rank_week(ranking_file):
 
 #teams_filename = '/Users/keegan/Projects/nba_reference/NBA_Teams.csv'
 
+def read_nba_teams_ref():
+    nba_teams_ref = pd.read_csv('Dash_Deploy/support/data/nba_teams_data.csv')
+    return nba_teams_ref
 
+#print(read_nba_teams_ref())
 
 def clean_date(raw_date=None):
     """ Get an external-friendly date in format 'Jan 24, 2025'. """
@@ -85,6 +93,7 @@ def create_season_rks_df(df: pd.DataFrame):
     season_rks_df = df[df['nba_week'] > 0]
 
     return season_rks_df
+
 def create_source_pt(df: pd.DataFrame):
     """Create a pivot table for Sources and Counts of Rankings."""
     if not isinstance(df, pd.DataFrame):
@@ -97,6 +106,7 @@ def create_source_pt(df: pd.DataFrame):
             aggfunc=pd.Series.nunique).rename(
                 columns={'nba_week':'rankings_count'}
             )
+
 def create_rk_pt(df: pd.DataFrame):
     """Create a pivot table for Average Ranks and NBA_Weeks."""
     if not isinstance(df, pd.DataFrame):
@@ -111,14 +121,14 @@ def create_rk_pt(df: pd.DataFrame):
     return rk_pt
 
     #rk_pt will be input for graphs
+
 def df_string_for_graph():
-    ranking_file = ranking_file
+    ranking_file = ranking_filepath
     df = create_season_rks_df(create_and_merge_rank_week(ranking_file))
     rk_pt = create_rk_pt(df)
   
     return rk_pt
     
-
 def sunday_lookup(week: int):
     """Lookup date for Sunday of week number."""
     try:
@@ -137,6 +147,33 @@ def create_sundays_array():
 
     return weeks_array, sundays_array
 
+def make_drilldown_options():
+    teams = read_nba_teams_ref()
+    drilldown_options = [
+        "All Teams"
+        ]
+
+    conf_buttons = []
+    div_buttons=[]
+
+    conf_set = set()
+    div_set = set()
+
+    for index, row in teams.iterrows():
+        conf = row['conference']
+        div = row['division']
+        conf_set.add(conf)
+        div_set.add(div)
+
+    for element in conf_set:
+        drilldown_options.append(element)
+        conf_buttons.append(element)
+
+    for element in div_set:
+        drilldown_options.append(element)
+        div_buttons.append(element)
+
+    return drilldown_options
 
 def make_fig(df_piv_rk):
     fig = go.Figure()
@@ -167,13 +204,14 @@ def make_fig(df_piv_rk):
         )
         fig.add_trace(trace)
         team_traces.append({"team":team, "conference":conference, "division": division})
-    
+
     weeks_array, sundays_array = create_sundays_array()
     sundays_str = [date.strftime('%Y-%m-%d') for date in sundays_array]
     fig.update_layout(
         autosize=True,
-        height=620,
-        plot_bgcolor= '#f9f9f9',
+        height=420,
+        paper_bgcolor='#f9f9f9',
+        plot_bgcolor= 'white',
         template="presentation",
         font_family="IBM Plex Mono",
         margin=dict(
@@ -308,6 +346,25 @@ app.layout = html.Div([
                     ,id="zone-highlights", 
                     className="button-grp"
                     ),
+                    html.Div(
+                        [
+                            html.H5('Select Conference/Division', className="button-label"),
+                            html.Div([
+                                dcc.Dropdown(
+                                    make_drilldown_options(),
+                                    id='team-dropdown',
+                                    className="check-label",
+                                    value="All Teams",
+                                    clearable=False
+                                    #options=[{'label': 'Top & Bottom 5', 'value': 'linear'}],
+                                    #value=['zone']
+                                ), 
+                            ],id='team-dropdown-div'
+                            )
+                        ]
+                    ,id="team-dropdown-group", 
+                    className="button-grp"
+                    ),
                     ]
             ,id="button_groups"
             ),],id='lower-section'),
@@ -318,6 +375,24 @@ app.layout = html.Div([
              ]),
 ], id='super-div')
 
+def drilldown_update_layout(value):
+    teams = read_nba_teams_ref()
+    
+    # List to hold visibility settings for each trace
+    visibility = []
+    
+    for _, row in teams.iterrows():
+        team = row["teamname"]
+        conf = row["conference"]
+        div = row["division"]
+
+        # Determine visibility per trace
+        if value == "All Teams":
+            visibility.append(True)  # Show all traces
+        else:
+            visibility.append(value in [team, conf, div])  # Show only matching traces
+
+    return [{"visible": v} for v in visibility]  # Return a list of individual updates
 
 def set_chart_yrange(value):
     """Update chart y_range based from radio button input."""
@@ -406,7 +481,7 @@ def set_xticks(value):
             tickvals=weeks_array,  # Use Unix timestamp for tickvals
             ticktext=sundays_str,  # Display string representation of the date
             tickfont=dict(
-                size=13  # Adjust tick label size (x-axis)
+                size=12  # Adjust tick label size (x-axis)
             )
         )
     return xticks_set
@@ -416,10 +491,12 @@ def set_xticks(value):
     Input('rank-radio', 'value'),
     Input('zone-check', 'value'),
     Input('week-day-check', 'value'),
+    Input('team-dropdown', 'value')
+
 
 )
 
-def update_graph(rank_radio, zone_check,week_day_check):
+def update_graph(rank_radio, zone_check,week_day_check, team_dropdown):
     fig = make_fig(df_string_for_graph())
 
     chart_settings = set_chart_yrange(rank_radio)
@@ -437,6 +514,9 @@ def update_graph(rank_radio, zone_check,week_day_check):
         ),
         xaxis= set_xticks(week_day_check)
     )
+    
+    for trace, vis_update in zip(fig.data, drilldown_update_layout(team_dropdown)):
+        trace.visible = vis_update["visible"]
 
     rectangles = zone_check_rect(zone_check)
 

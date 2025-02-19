@@ -106,9 +106,10 @@ h3{
 }
 #graph-div{
     /*border: 5px solid red;*/
-    /*background-color: var(--colorbg);*/
+    background-color: var(--whitebg);
     /*padding: 20px 15px;*/
     border-radius: var(--bordrad);
+    padding-bottom: 10px;
     /*margin: -5px;*/
     /*margin-top: 15px;*/
     /*padding: 5px 0;*/
@@ -119,7 +120,7 @@ h3{
 }
 
 #graph-subdiv{
-    background-color: white;
+    background-color: var(--whitebg);
     border-radius: var(--bordrad);
     padding: 10px;
 }
