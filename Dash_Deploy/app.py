@@ -14,7 +14,7 @@ import support.nba_teams as teams
 import glob
 from dateutil.parser import parse
 
-WEEK_REFERENCE_PATH = 'Dash_Deploy/support/data/nba_weeks_ref.csv'
+WEEK_REFERENCE_PATH = 'support/data/nba_weeks_ref.csv'
 #def find_latest_file(folder, extension=''):
 #    """Find latest file in specified folder."""
 #    if extension:
@@ -31,7 +31,7 @@ WEEK_REFERENCE_PATH = 'Dash_Deploy/support/data/nba_weeks_ref.csv'
 #    else:
 #        return f"Found no files with extension '{extension}' in '{folder}'"
 
-ranking_filepath = 'Dash_Deploy/support/data/latest_powerrankings.csv'
+ranking_filepath = 'support/data/latest_powerrankings.csv'
 
 def read_nba_week():    
     """Read NBA Week from reference file."""
@@ -43,8 +43,10 @@ def read_ranking_file(ranking_file):
     return rk
 today = dt.today()
 
-def get_nba_week_no(date=today):
+def get_nba_week_no(date=None):
     """Get NBA Week number"""
+    if date is None:
+        date = dt.today()
     wk = read_nba_week()
     nba_week_no = wk[wk['sunday'] <= date].nba_week.max()
 
@@ -71,7 +73,7 @@ def create_and_merge_rank_week(ranking_file):
 #teams_filename = '/Users/keegan/Projects/nba_reference/NBA_Teams.csv'
 
 def read_nba_teams_ref():
-    nba_teams_ref = pd.read_csv('Dash_Deploy/support/data/nba_teams_data.csv')
+    nba_teams_ref = pd.read_csv('support/data/nba_teams_data.csv')
     return nba_teams_ref
 
 #print(read_nba_teams_ref())
@@ -146,6 +148,8 @@ def create_sundays_array():
         sundays_array.append(sunday_lookup(i))
 
     return weeks_array, sundays_array
+
+
 
 def make_drilldown_options():
     teams = read_nba_teams_ref()
@@ -225,7 +229,7 @@ def make_fig(df_piv_rk):
         xaxis=dict(
             domain=[0.1,0.85],
             tickmode='array',
-            tickvals=weeks_array,
+            #dtick=5, 
             #ticktext=sundays_str,
             #nticks = 5,
             title=dict(
@@ -493,10 +497,12 @@ def zone_check_rect(value):
 
 def set_hovertemplate_format(value):
     if value == ['dates', 'linear']:
+        #week = '%{x}'
         #['dates', 'linear'] is the output if the weeks is selected
-        hovertemplate_btmlines = '<br><b>week</b>: %{x}<br><b>rank</b>: %{y}'
+        hovertemplate_btmlines = ''.join(['<br><b>date</b>: x (wk. %{x})<br><b>rank</b>: %{y}'])
     else: 
-        hovertemplate_btmlines = '<br><b>date</b>: %{x}<br><b>rank</b>: %{y}'
+        #date = '%{x}'
+        hovertemplate_btmlines = ''.join(['<br><b>date</b>:%{x} (wk. {get_nba_week_no(date)})<br>', '<b>rank</b>: %{y}'])
 
     return hovertemplate_btmlines
 
@@ -530,9 +536,9 @@ def set_xticks(value):
             #title="<b>Days</b>",
             tickmode='array',
             #font_size=16,
-            tickvals=weeks_array,  # Use Unix timestamp for tickvals
-            ticktext=sundays_str, 
-            dtick = 14, # Display string representation of the date
+            tickvals=weeks_array[::2],  # Use Unix timestamp for tickvals
+            ticktext=sundays_str[::2],
+            nticks=5,
             tickfont=dict(
                 size=12  # Adjust tick label size (x-axis)
             )
