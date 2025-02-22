@@ -14,7 +14,7 @@ import support.nba_teams as teams
 import glob
 from dateutil.parser import parse
 
-WEEK_REFERENCE_PATH = 'support/data/nba_weeks_ref.csv'
+WEEK_REFERENCE_PATH = 'Dash_Deploy/support/data/nba_weeks_ref.csv'
 #def find_latest_file(folder, extension=''):
 #    """Find latest file in specified folder."""
 #    if extension:
@@ -31,7 +31,7 @@ WEEK_REFERENCE_PATH = 'support/data/nba_weeks_ref.csv'
 #    else:
 #        return f"Found no files with extension '{extension}' in '{folder}'"
 
-ranking_filepath = 'support/data/latest_powerrankings.csv'
+ranking_filepath = 'Dash_Deploy/support/data/latest_powerrankings.csv'
 
 def read_nba_week():    
     """Read NBA Week from reference file."""
@@ -71,7 +71,7 @@ def create_and_merge_rank_week(ranking_file):
 #teams_filename = '/Users/keegan/Projects/nba_reference/NBA_Teams.csv'
 
 def read_nba_teams_ref():
-    nba_teams_ref = pd.read_csv('support/data/nba_teams_data.csv')
+    nba_teams_ref = pd.read_csv('Dash_Deploy/support/data/nba_teams_data.csv')
     return nba_teams_ref
 
 #print(read_nba_teams_ref())
@@ -187,6 +187,8 @@ def make_fig(df_piv_rk):
         ## add conference attributes
         conference = teams.nba_conf(team)
         division = teams.nba_div(team)
+
+        base_hover = f"<b>{team.upper()}</b>"
         
         #print(f"Adding trace for: {team}")
         trace = go.Scatter(
@@ -197,7 +199,8 @@ def make_fig(df_piv_rk):
             name=team,
             opacity = 0.85,
             marker_color=teams.team_color1(team),
-            hovertemplate=f"<b>{team.upper()}</b>" + '<br><b>date</b>: %{x}<br><b>rank</b>: %{y}<extra></extra>',
+            hovertemplate=base_hover,
+            #hovertemplate=f"<b>{team.upper()}</b>" + '<br><b>date</b>: %{x}<br><b>rank</b>: %{y}<extra></extra>',
             visible=True,
             showlegend=True,
             #legendgroup=team,
@@ -209,7 +212,8 @@ def make_fig(df_piv_rk):
     sundays_str = [date.strftime('%Y-%m-%d') for date in sundays_array]
     fig.update_layout(
         autosize=True,
-        height=420,
+        height=520,
+        #showlegend=False,
         paper_bgcolor='#f9f9f9',
         plot_bgcolor= 'white',
         template="presentation",
@@ -219,27 +223,33 @@ def make_fig(df_piv_rk):
             l=5,
         ),
         xaxis=dict(
-            domain=[0.1,0.95],
+            domain=[0.1,0.85],
             tickmode='array',
             tickvals=weeks_array,
-            ticktext=sundays_str,
-            dtick = 5,
+            #ticktext=sundays_str,
+            #nticks = 5,
             title=dict(
-                text="<b>Date</b>"
+                text="<b>Date</b>",
+                font_size=18,
             ),
             
             tickfont=dict(
-                size=13  # Adjust tick label size (x-axis)
+                size=12  # Adjust tick label size (x-axis)
             ),
-            tickangle=65,
+            #tickangle=65,
             showline=True,
             linecolor='black',
             #linewidth=2,
         ),
         yaxis=dict(
             title=dict(
-                text="<b>Mean Ranking</b>"
+                text="<b>Mean Ranking</b>",
+                font_size=18,
             ),
+            tickfont=dict(
+                size=12  # Adjust tick label size (x-axis)
+            ),
+          
             tickmode = 'array',
             tickvals = def_tickvals,
             range=[30.5,0.5], # manual range — 1 as top, adds top- / bottom-padding for readability
@@ -253,25 +263,35 @@ def make_fig(df_piv_rk):
             family="IBM Plex Mono"
         )),
         legend=dict(
-            x=0.99,
+            x=1.05,
             y=1,
+            xanchor="right",
+            yanchor="top",
             #itemwidth=420,
+            orientation='v',
             title = dict(
                 text="<b>NBA Teams</b>",
+       
                 ),
                 #xanchor='center'),
-            xanchor='left',
-            yanchor="top",
+            #xanchor='left',
             font=dict(
                 size=12,
                 weight='normal',
 
-            )
+            ),
+            traceorder="normal",
+            #bordercolor="Black",
+            #borderwidth=2,
+            entrywidth=70,
+
+   
         ),
     )
     return fig
 
 
+##### APP #####
 app = Dash(__name__)
 server = app.server
 app.title = "NBA Power Rankings Viz"
@@ -279,101 +299,119 @@ app.title = "NBA Power Rankings Viz"
 app.layout = html.Div([
     html.Div([
         html.H1('Visualizing NBA Power Rankings', id='page-title'),
-        html.H3(f"Pulling data from top sports media outlets to trace the ever-changing fortunes of NBA teams.", id='subtitle'),],id='page-header'
+        html.H3(f"Tracking top sports media outlets to map the NBA's ever-shifting landscape.", id='page-subtitle'),
+        html.Div(className="shape-sep"),
+        html.H5('Created by Keegan Morris', className='byline'),
+        ],id='header-div'
     ),
     html.Div(
-        html.Div(
-            dcc.Graph(id="pr-graph", figure=make_fig(df_string_for_graph())),
-            id='graph-subdiv'
-            ),
+
         id='graph-div',
-    ),
-    html.Div([    
-        html.Div(
-            html.H3(
-                'Filters',
-                className='section-head', id='section-head-filters',
+        children=[
+        html.Div( 
+            id='graph-subdiv',
+            children=[
+            dcc.Graph(
+                figure=make_fig(df_string_for_graph()), 
+                id="pr-graph",
             ),
+            ]
         ),
-        html.Div(className="button-array",
-                children=[
+        html.Div(
+            id="legend-div",
+            style={"width": "200px"}, 
+        ),
+]),
+    html.Div([    
+        html.Div([
+            #html.Details("filters"),
+            html.Details([
+                html.Summary("Filters"),
+            #html.H3(
+            #    'Filters',
+            #    className='section-head', id='section-head-filters',
+            #),
+                html.Div(className="button-array-html",
+                        children=[
+                            
+                            html.Div([
+                                html.H5('Filter by Range', id="range-header", className="button-label"),
+                                dcc.RadioItems(
+                                    [
+                                        {'label':'1-30', 'value': 'def-range'}, 
+                                        {'label': 'Top 5', 'value': 'bot-5'},
+                                        {'label': 'Bottom 5', 'value': 'top-5'}, 
+                                    ], 
+                                    'def-range', 
+                                    id="rank-radio",
+                                    labelStyle={'display':'inline-block'},
+                                    className="radio-label"
+                                ),
+                                html.P('1-30 is default', id="note1", className="footnote")
+                            ],id="rank-range", className="button-grp"),
                     
-                    html.Div([
-                        html.H5('Filter by Range', id="range-header", className="button-label"),
-                        dcc.RadioItems(
-                            [
-                                {'label':'1-30', 'value': 'def-range'}, 
-                                {'label': 'Top 5', 'value': 'bot-5'},
-                                {'label': 'Bottom 5', 'value': 'top-5'}, 
-                            ], 
-                            'def-range', 
-                            id="rank-radio",
-                            labelStyle={'display':'inline-block'},
-                            className="radio-label"
-                        ),
-                        html.P('1-30 is default', id="note1", className="footnote")
-                    ],id="rank-range", className="button-grp"),
-            
-                    html.Div(
-                        [
-                            html.H5('Update XTicks Labels', className="button-label"),
-                            html.Div([
-                                dcc.Checklist(
-                                    id='week-day-check',
-                                    className="check-label",
-                                    options=[{'label': 'Display Weeks', 'value': 'linear'}],
-                                    value=['dates']
-                                ), 
-                            ],
-                            )
-                        ]
-                    ,id="xticks-labels", 
-                    className="button-grp"
-                    ),
-                    html.Div(
-                        [
-                            html.H5('Highlighting', className="button-label"),
-                            html.Div([
-                                dcc.Checklist(
-                                    id='zone-check',
-                                    className="check-label",
-                                    options=[{'label': 'Top & Bottom 5', 'value': 'linear'}],
-                                    value=['zone']
-                                ), 
-                            ],
-                            )
-                        ]
-                    ,id="zone-highlights", 
-                    className="button-grp"
-                    ),
-                    html.Div(
-                        [
-                            html.H5('Select Conference/Division', className="button-label"),
-                            html.Div([
-                                dcc.Dropdown(
-                                    make_drilldown_options(),
-                                    id='team-dropdown',
-                                    className="check-label",
-                                    value="All Teams",
-                                    clearable=False
-                                    #options=[{'label': 'Top & Bottom 5', 'value': 'linear'}],
-                                    #value=['zone']
-                                ), 
-                            ],id='team-dropdown-div'
-                            )
-                        ]
-                    ,id="team-dropdown-group", 
-                    className="button-grp"
-                    ),
-                    ]
-            ,id="button_groups"
-            ),],id='lower-section'),
+                            html.Div(
+                                [
+                                    html.H5('Update XTicks Labels', className="button-label"),
+                                    html.Div([
+                                        dcc.Checklist(
+                                            id='week-day-check',
+                                            className="check-label",
+                                            options=[{'label': 'Display Weeks', 'value': 'linear'}],
+                                            value=['dates']
+                                        ), 
+                                    ],
+                                    )
+                                ]
+                            ,id="xticks-labels", 
+                            className="button-grp"
+                            ),
+                            html.Div(
+                                [
+                                    html.H5('Highlighting', className="button-label"),
+                                    html.Div([
+                                        dcc.Checklist(
+                                            id='zone-check',
+                                            className="check-label",
+                                            options=[{'label': 'Top & Bottom 5', 'value': 'linear'}],
+                                            value=['zone']
+                                        ), 
+                                    ],
+                                    )
+                                ]
+                            ,id="zone-highlights", 
+                            className="button-grp"
+                            ),
+                            html.Div(
+                                [
+                                    html.H5('Select Conference/Division', className="button-label"),
+                                    html.Div([
+                                        dcc.Dropdown(
+                                            make_drilldown_options(),
+                                            id='team-dropdown',
+                                            className="check-label",
+                                            value="All Teams",
+                                            clearable=False
+                                            #options=[{'label': 'Top & Bottom 5', 'value': 'linear'}],
+                                            #value=['zone']
+                                        ), 
+                                    ],id='team-dropdown-div'
+                                    )
+                                ]
+                            ,id="team-dropdown-group", 
+                            className="button-grp"
+                            ),
+                            ]
+                    ,id="button_groups"
+                    ),],
+                    id='lower-section'),]),
+    ]),
     html.Div(id="text-attribution",
              children=[
                  dcc.Markdown('''Created by [Keegan Morris](https://keegan-morris.com/)''',link_target="_blank", id='attrib-markdown'),
                  html.P(f"Updated {clean_date()}", id='attrib-date')
              ]),
-], id='super-div')
+], id='app-div')
 
 def drilldown_update_layout(value):
     teams = read_nba_teams_ref()
@@ -453,6 +491,15 @@ def zone_check_rect(value):
 
     return r_dict
 
+def set_hovertemplate_format(value):
+    if value == ['dates', 'linear']:
+        #['dates', 'linear'] is the output if the weeks is selected
+        hovertemplate_btmlines = '<br><b>week</b>: %{x}<br><b>rank</b>: %{y}'
+    else: 
+        hovertemplate_btmlines = '<br><b>date</b>: %{x}<br><b>rank</b>: %{y}'
+
+    return hovertemplate_btmlines
+
 def set_xticks(value):
     """Alternate between date and nba_week # XTick labels."""
     weeks_array, sundays_array = create_sundays_array()
@@ -462,24 +509,30 @@ def set_xticks(value):
         # Convert sundays_array to strings in the format 'YYYY-MM-DD'
         xticks_set = dict(
         
-            title="<b>Weeks</b>",
-            title_standoff=73,
+            title=dict(
+                text="<b>Week</b>",
+                font_size=18,
+            ),
+            #title_standoff=73,
             tickmode='array',
             tickvals=weeks_array,  # Use Unix timestamp for tickvals
             ticktext=weeks_array,  # Display string representation of the date
             dtick = 5,
             tickfont=dict(
-                size=18  # Adjust tick label size (x-axis)
+                size=12  # Adjust tick label size (x-axis)
             ),
             tickangle=0,
-            
         )
     else:
         xticks_set = dict(
+
+            ## REmove year
             #title="<b>Days</b>",
             tickmode='array',
+            #font_size=16,
             tickvals=weeks_array,  # Use Unix timestamp for tickvals
-            ticktext=sundays_str,  # Display string representation of the date
+            ticktext=sundays_str, 
+            dtick = 14, # Display string representation of the date
             tickfont=dict(
                 size=12  # Adjust tick label size (x-axis)
             )
@@ -509,11 +562,16 @@ def update_graph(rank_radio, zone_check,week_day_check, team_dropdown):
         yaxis=dict(
             range=chart_yrange,
             dtick=chart_dtick,
+            #ytick_size=12px,
             tickvals=chart_tickvals,
             title_standoff=title_standoff
         ),
-        xaxis= set_xticks(week_day_check)
+        xaxis= set_xticks(week_day_check),
     )
+    for trace in fig.data:
+        additional_hover = set_hovertemplate_format(week_day_check)
+        trace.hovertemplate += additional_hover + '<extra></extra>'
+    #fig.update_traces(hovertemplate = trace.hovertemplate + set_hovertemplate_format(week_day_check))
     
     for trace, vis_update in zip(fig.data, drilldown_update_layout(team_dropdown)):
         trace.visible = vis_update["visible"]

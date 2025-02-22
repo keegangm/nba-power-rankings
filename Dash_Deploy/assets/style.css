@@ -3,11 +3,13 @@
 
 :root{
     --graybg: rgb(233, 233, 233);
+    /*--graybg: rgb(110, 110, 110);*/
     --colorbg: #aaaaaa;
     --whitebg: #f9f9f9;
     --bordrad: 13px;
     --fontcolor: #2d2d2d;
     --sec-fontcolor: rgb(92, 92, 92);
+    --accentcolor: /*#991de6;*/ #007AC1; 
     --text-font: "IBM Plex Sans", Arial, Helvetica, sans-serif;
     --tech-font: "IBM Plex Mono", 'Courier New', Courier, monospace;
 }
@@ -18,6 +20,7 @@ body{
     color: var(--fontcolor) !important;
     max-width: 1200px;
     margin: auto;
+    /*padding: 5px;*/
 }
 
 button{
@@ -25,10 +28,6 @@ button{
     /*font-size: 200px;*/
 }
 
-#subtitle {
-    color: var(--sec-fontcolor);
-    margin-top: 20px;
-}
 
 h1{
     /*color: tomato;*/
@@ -49,15 +48,170 @@ h3{
     font-size: 17px;
 }
 
+/*hr{
+    color: var(--accentcolor);
+}*/
+
+#app-div{
+    margin: 5px;
+}
+#header-div{
+    padding: 10px 35px 15px 35px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+    /*line-height: 15px;*/
+    background-color: var(--whitebg);
+    border-radius: var(--bordrad);
+}
+
+#page-subtitle {
+    color: var(--sec-fontcolor);
+    margin-top: 15px;
+    font-style: italic;
+}
+
+.byline {
+    color: var(--fontcolor);
+    /*font-family: var(--tech-font);*/
+    /*text-transform: uppercase;*/
+    text-align: left;
+    margin: 10px 0 10px 0;
+    /*margin-bottom: 10px;*/
+    font-weight: 500;
+}
+
+.shape-sep{
+    /*display: table-cell;*/
+    flex-grow: 1;
+    height: 10px;
+    /*margin: 2px 0;*/
+    /*margin-bottom: 5px;*/
+    min-width: 100px;
+    background-color: var(--accentcolor);
+    background: repeating-linear-gradient(-90deg, #f9f9f9, #f9f9f9 5px, var(--accentcolor) 0px, var(--accentcolor) 6.5px );
+    /*opacity: .8;*/
+    /*border:2px solid var(--accentcolor);*/
+
+    
+}
+
 #pr-graph{
     margin-top: 15px;
+    width: 100%;    
+    
+}
+
+
+
+#graph-div{
+    /*border: 5px solid red;*/
+    background-color: var(--whitebg);
+    /*padding: 20px 15px;*/
+    border-radius: var(--bordrad);
+    padding-bottom: 6px;
+    /*margin: -5px;*/
+    /*margin-top: 15px;*/
+    /*padding: 5px 0;*/
+}
+
+#graph-subdiv{
+    background-color: var(--whitebg);
+    border-radius: var(--bordrad);
+    padding: 10px;
+}
+
+
+#lower-section {
+    background-color: var(--whitebg);
+    /*padding-top: 8px;*/
+    margin-top: 30px;
+    margin-bottom: 30px;
+    /*padding-top: 15px;*/
+    /*padding-bottom: 35px;*/
+    /*border-bottom: 2px solid black;*/
+    border-radius: var(--bordrad) /* var(--bordrad) 0 0; */
+}
+
+
+/* ---- adding gradient to encourage opening to filters */
+/*  */
+#lower-section:has(details[open]) {
+    border-radius: var(--bordrad) ;
+    padding-bottom: initial;
+}
+/*
+#lower-section::after{
+    content:"";
+    position: absolute;
     width: 100%;
+    max-width: calc(1200px - 10px);
+    /*height:30px;*/
+    /*width: 60%;*/
+    /*margin: auto;*/
+    /*border-bottom: 1px dashed var(--sec-fontcolor);*/
+    /*transform: translate(-10px);*/
+    /*transform: scale(93.5%);*/
+    /*bottom:-113px;*/
+    /*transform: translate3d();*/
+    /*background: linear-gradient(to bottom, var(--whitebg) 24%,  rgb(249,249,249,0));*/
+    /*opacity: .6;*/
+
+/*}*/
+/*  */
+
+/*#lower-section:has(details[open])::after {
+    opacity: 0;*/
+
+    /*transition: opacity 0.3s ease-in-out;*/
+
+  /*}*/
+
+
+details > summary {
+    /*padding: 150px;*/
+    color: var(--sec-fontcolor);
+    padding: 15px;
+    justify-content: center;
+    text-align: right;
+    /*font-style: italic;*/
+    font-weight: 450;
+}
+
+summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 14px;
+    /*font-weight: bold;*/
+    list-style: none; /* Removes default disclosure triangle in some browsers */
+  }
+
+summary::after {
+    content: "+"; /* Default arrow */
+    padding-left: 10px;
+    padding-right: 25px;
+}
+
+details[open] summary::after{
+    content: "-";
+}
+
+
+#button_groups{
+    /*color: green !important;
+    background-color: aqua;*/
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    margin-top: 0px;
+    /*margin: 5px;*/
+    /*padding: 20px;*/
 }
 
 .button-grp{
-    /*display: inline-block;*/
-    max-width: 400px;
-    /*display: block;*/
+    max-width: 300px;
     text-align: center;
     align-content: top;
     /*padding: 0 25px 25px 25px;*/
@@ -75,8 +229,7 @@ h3{
 }
 
 .button-array {
-    /*display: block;*/
-    /*justify-content: center;*/
+    justify-content: space-between;
     text-align: center;
     margin-top: 0px;
     padding-top: 0px;
@@ -87,53 +240,12 @@ h3{
     padding-right: 15px;*/
 }
 
-#page-header{
-    padding: 10px 0 15px 25px;
-    margin-top: 45px;
-    margin-bottom: 25px;
-    line-height: 15px;
-    background-color: var(--whitebg);
-    border-radius: var(--bordrad);
-
-}
-
-#lower-section {
-    background-color: var(--whitebg);
-    padding-top: 12px;
-    margin-top: 30px; 
-    margin-bottom: 35px;
-    border-radius: var(--bordrad);
-}
-#graph-div{
-    /*border: 5px solid red;*/
-    background-color: var(--whitebg);
-    /*padding: 20px 15px;*/
-    border-radius: var(--bordrad);
-    padding-bottom: 10px;
-    /*margin: -5px;*/
-    /*margin-top: 15px;*/
-    /*padding: 5px 0;*/
-}
-
-#super-div{
-    margin: 5px;
-}
-
-#graph-subdiv{
-    background-color: var(--whitebg);
-    border-radius: var(--bordrad);
-    padding: 10px;
-}
-
-#button_groups{
-    /*color: green !important;
-    background-color: aqua;*/
+.button-array-html {
     display: flex;
-    justify-content: center;
-    text-align: center;
-    margin-top: 0px;
-    /*margin: 5px;*/
-    /*padding: 20px;*/
+    justify-content: space-between; 
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 0 25px;
 }
 .dcc-radio label, .dcc-checklist label, .radio-label, .check-label {
     /*font-family: 'Arial', sans-serif;*/
@@ -147,7 +259,7 @@ h3{
 
 .footnote{
     font-size: 10px;
-    text-align: right;
+    /*text-align: right;*/
     font-style: italic;
     color: rgb(88, 88, 88);
     margin-top: 15px;
@@ -155,10 +267,13 @@ h3{
     /*margin-bottom: 3px;*/
 }
 
-.section-head{
+.fltr-section-head{
     /*color: fuchsia;*/
     /*justify-content: center;*/
     text-align: center;
+    font-weight: bold;
+    font-size: 20px;
+    margin-bottom: 0px;
     /*margin-top: 35px;*/
     /*margin-bottom: 5px;*/
     /*font-family: var(--text-font);*/
@@ -181,6 +296,7 @@ h3{
     padding-right: 20px;
     line-height: 3px;
     display:block;
+    padding-bottom: 15px;
 }
 
 #attrib-markdown{
