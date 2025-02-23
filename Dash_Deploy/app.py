@@ -5,6 +5,7 @@ import subprocess
 # Dash imports
 from dash import Dash, dcc, html, callback, Output, Input, State
 from datetime import datetime as dt
+from datetime import date
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -14,7 +15,7 @@ import support.nba_teams as teams
 import glob
 from dateutil.parser import parse
 
-WEEK_REFERENCE_PATH = 'support/data/nba_weeks_ref.csv'
+WEEK_REFERENCE_PATH = 'Dash_Deploy/support/data/nba_weeks_ref.csv'
 #def find_latest_file(folder, extension=''):
 #    """Find latest file in specified folder."""
 #    if extension:
@@ -31,7 +32,7 @@ WEEK_REFERENCE_PATH = 'support/data/nba_weeks_ref.csv'
 #    else:
 #        return f"Found no files with extension '{extension}' in '{folder}'"
 
-ranking_filepath = 'support/data/latest_powerrankings.csv'
+ranking_filepath = 'Dash_Deploy/support/data/latest_powerrankings.csv'
 
 def read_nba_week():    
     """Read NBA Week from reference file."""
@@ -71,7 +72,7 @@ def create_and_merge_rank_week(ranking_file):
 #teams_filename = '/Users/keegan/Projects/nba_reference/NBA_Teams.csv'
 
 def read_nba_teams_ref():
-    nba_teams_ref = pd.read_csv('support/data/nba_teams_data.csv')
+    nba_teams_ref = pd.read_csv('Dash_Deploy/support/data/nba_teams_data.csv')
     return nba_teams_ref
 
 #print(read_nba_teams_ref())
@@ -122,9 +123,31 @@ def create_rk_pt(df: pd.DataFrame):
 
     #rk_pt will be input for graphs
 
+def create_filtered_df(df: pd.DataFrame, start_date,end_date=dt.today()):
+    """Filter the DataFrame to only include rows with valid NBA weeks."""
+
+    
+    start_adjust = most_recent_sunday(start_date) # find most recent sunday
+    end_adjust = end_date
+
+    df = df[df['nba_week'].notna()]
+    df['nba_week'] = df['nba_week'].astype(int)
+    
+    filtered_df = df[(df.date >= start_adjust) & (df.date <= end_adjust)]
+    
+    return filtered_df
+
+
 def df_string_for_graph():
     ranking_file = ranking_filepath
     df = create_season_rks_df(create_and_merge_rank_week(ranking_file))
+    rk_pt = create_rk_pt(df)
+  
+    return rk_pt
+
+def df_string_for_graph_2(start='2024-10-20', end=dt.today()):
+    ranking_file = ranking_filepath
+    df = create_filtered_df(create_and_merge_rank_week(ranking_file), start, end)
     rk_pt = create_rk_pt(df)
   
     return rk_pt
@@ -304,6 +327,19 @@ app.layout = html.Div([
         html.H5('Created by Keegan Morris', className='byline'),
         ],id='header-div'
     ),
+    html.Div(id="date-div",
+             children=[
+                dcc.DatePickerRange(
+                    id='date-picker',
+                    minimum_nights=7,
+                    clearable=True,
+                    start_date=date(2024,10,22),
+                    end_date=date.today(),
+                    min_date_allowed=date(2024,10,22),
+                    max_date_allowed=date.today()
+                ),
+                html.Div(id="output-container")
+             ]),
     html.Div(
 
         id='graph-div',
@@ -541,17 +577,26 @@ def set_xticks(value):
 
 @app.callback(
     Output('pr-graph','figure'),
+    Output('output-container','children'),
     Input('rank-radio', 'value'),
     Input('zone-check', 'value'),
     Input('week-day-check', 'value'),
-    Input('team-dropdown', 'value')
+    Input('team-dropdown', 'value'),
+    Input('date-picker', 'start_date'),
+    Input('date-picker', 'end_date'),
 
 
 )
 
-def update_graph(rank_radio, zone_check,week_day_check, team_dropdown):
-    fig = make_fig(df_string_for_graph())
+def update_graph(rank_radio, zone_check,week_day_check, team_dropdown, start_date, end_date):
 
+    df = df_string_for_graph_2(start_date, end_date)
+
+    fig = make_fig(df)
+
+    start_end_str = f"Start date: {start_date}"
+
+ 
     chart_settings = set_chart_yrange(rank_radio)
     chart_yrange = chart_settings[0]
     chart_dtick = chart_settings[1]
@@ -566,7 +611,10 @@ def update_graph(rank_radio, zone_check,week_day_check, team_dropdown):
             tickvals=chart_tickvals,
             title_standoff=title_standoff
         ),
-        xaxis= set_xticks(week_day_check),
+        xaxis= dict(
+            set_xticks(week_day_check),
+            
+        )
     )
     for trace in fig.data:
         additional_hover = set_hovertemplate_format(week_day_check)
@@ -583,7 +631,15 @@ def update_graph(rank_radio, zone_check,week_day_check, team_dropdown):
         for rect in rectangles:
             fig.add_hrect(**rect)
 
-    return fig
+    string_prefix="You have selected: "
+    #if date_value is not None:
+    #    date_object = date.fromisoformat()
+    
+
+    
+    
+    return fig, start_end_str
+    #return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True, dev_tools_hot_reload=False)
