@@ -12,8 +12,6 @@
 - [x] Filters header needs changing
 - [x] Change hover to show "Week:" when week is selected
 - [ ] Date selectors
-- [ ] Update xtick labels for date mode
-- [ ] Update second line of hoverlabel to read: `date: [date] (wk. [wk])`
  
 ### Features
 - [ ] Animate over time
