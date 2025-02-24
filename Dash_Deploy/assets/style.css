@@ -96,7 +96,7 @@ h3{
 }
 
 #pr-graph{
-    margin-top: 15px;
+    margin-top: 0;
     width: 100%;    
     
 }
@@ -117,7 +117,8 @@ h3{
 #graph-subdiv{
     background-color: var(--whitebg);
     border-radius: var(--bordrad);
-    padding: 10px;
+    padding: 0 15px 10px 15px;
+    /*z-index: 2 ;*/
 }
 
 
@@ -309,3 +310,34 @@ details[open] summary::after{
     margin-top:0px;
     margin-bottom: 45px;
 }
+
+/* date-subdiv */
+#date-subdiv{
+    display: flex;
+    justify-content: flex-end;
+    /*margin-left: auto;*/
+    padding: 25px;
+    z-index: 15;
+}
+
+
+.DateInput_input, .Select-value-label {
+    font-family: var(--tech-font);
+    font-weight: 450;
+    font-size: 15px;
+}
+
+
+
+.DateRangePicker,  .DateRangePickerInput, .DateInput_input, .DateInput, .Select-control{
+    border-radius: 6px;
+}
+
+#date-label{
+    padding-right: 15px;
+    /*align-content: center;*/
+
+}
+
+/* DatePicker */
+
