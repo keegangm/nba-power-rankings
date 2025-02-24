@@ -96,7 +96,7 @@ h3{
 }
 
 #pr-graph{
-    /*margin-top: -25px;*/
+    margin-top: 0;
     width: 100%;    
     
 }
@@ -117,7 +117,8 @@ h3{
 #graph-subdiv{
     background-color: var(--whitebg);
     border-radius: var(--bordrad);
-    padding: -5px 15px 10px 15px;
+    padding: 0 15px 10px 15px;
+    /*z-index: 2 ;*/
 }
 
 
@@ -316,6 +317,7 @@ details[open] summary::after{
     justify-content: flex-end;
     /*margin-left: auto;*/
     padding: 25px;
+    z-index: 15;
 }
 
 

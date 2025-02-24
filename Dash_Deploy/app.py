@@ -282,7 +282,7 @@ def make_fig(df_piv_rk):
     sundays_str = [date.strftime('%Y-%m-%d') for date in sundays_array]
     fig.update_layout(
         autosize=True,
-        height=520,
+        height=620,
         #showlegend=False,
         paper_bgcolor='#f9f9f9',
         plot_bgcolor= 'white',
