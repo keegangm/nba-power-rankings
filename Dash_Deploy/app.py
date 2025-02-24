@@ -306,7 +306,7 @@ def make_fig(df_piv_rk):
             tickfont=dict(
                 size=12  # Adjust tick label size (x-axis)
             ),
-            #tickangle=65,
+            tickangle=70,
             showline=True,
             linecolor='black',
             #linewidth=2,
@@ -333,7 +333,7 @@ def make_fig(df_piv_rk):
             family="IBM Plex Mono"
         )),
         legend=dict(
-            x=1.05,
+            x=1.08,
             y=1,
             xanchor="right",
             yanchor="top",
