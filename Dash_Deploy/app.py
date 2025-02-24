@@ -15,7 +15,41 @@ import support.nba_teams as teams
 import glob
 from dateutil.parser import parse
 
-WEEK_REFERENCE_PATH = 'Dash_Deploy/support/data/nba_weeks_ref.csv'
+def find_file(file_name):
+    file_name = f"{file_name}.csv"
+    possible_paths = [
+        os.path.join("Dash_Deploy", "support", "data", file_name),
+        os.path.join("support", "data", file_name)
+    ]
+
+    for file_path in possible_paths:
+        if os.path.exists(file_path):
+            return file_path  # Return the first found file
+
+    return None  # File not found in either path
+
+# Print results
+
+
+#def get_csv(input):
+#    if input == 'nba_weeks_ref':
+#        path_end = "support/data/nba_weeks_ref.csv" #, parse_dates=['sunday'], dtype={'nba_week': int}"
+#    if input == 'latest_powerrankings':
+#        path_end = "support/data/latest_powerrankings.csv" # , parse_dates=['date'], date_format='%y%m%d')"
+#    if input == 'nba_teams_data':
+#        path_end = 'support/data/nba_teams_data.csv'
+
+#    else:
+#        path_end is None
+
+#    try:
+#        path = path_end
+#        csvfile = pd.read_csv(path)
+#    except:
+#        path = 'Dash_Deploy/' + path_end
+#        csvfile = pd.read_csv(path)
+
+#    return csvfile
 #def find_latest_file(folder, extension=''):
 #    """Find latest file in specified folder."""
 #    if extension:
@@ -32,16 +66,28 @@ WEEK_REFERENCE_PATH = 'Dash_Deploy/support/data/nba_weeks_ref.csv'
 #    else:
 #        return f"Found no files with extension '{extension}' in '{folder}'"
 
-ranking_filepath = 'Dash_Deploy/support/data/latest_powerrankings.csv'
+#ranking_filepath = 'Dash_Deploy/support/data/latest_powerrankings.csv'
+#ranking_filepath = 'Dash_Deploy/support/data/latest_powerrankings.csv'
+#ranking_filepath = get_path('latest_powerrankings')
+#ranking_filepath = get_csv('latest_powerrankings')
+WEEK_REFERENCE_PATH = find_file('nba_weeks_ref')
 
 def read_nba_week():    
     """Read NBA Week from reference file."""
     return pd.read_csv(WEEK_REFERENCE_PATH, parse_dates=['sunday'], dtype={'nba_week': int})
+    #csv_df =  get_csv('nba_weeks_ref')
+    csv_df['sunday'] = pd.to_datetime(csv_df['sunday'])
+    csv_df['nba_week'] = pd.to_numeric(csv_df['nba_week'])
 
-def read_ranking_file(ranking_file):
+    return csv_df
+
+def read_ranking_file():
     """Read NBA Ranking file"""
-    rk = pd.read_csv(ranking_file, parse_dates=['date'], date_format="%y%m%d") # 02-Dec-24
+    #rk = get_csv('latest_powerrankings')
+    #rk['date'] = pd.to_datetime(rk['date'])
+    rk = pd.read_csv(find_file('latest_powerrankings'), parse_dates=['date'], date_format="%y%m%d") # 02-Dec-24
     return rk
+
 today = dt.today()
 
 def get_nba_week_no(date=today):
@@ -57,9 +103,9 @@ def most_recent_sunday(date):
     #return date
     return date - pd.to_timedelta(date.weekday() + 1, unit='D')
 
-def create_and_merge_rank_week(ranking_file):
+def create_and_merge_rank_week():
 
-    rk = read_ranking_file(ranking_file)
+    rk = read_ranking_file()
     wk = read_nba_week()
 
     rk['sunday'] = rk['date'].apply(most_recent_sunday)
@@ -72,7 +118,8 @@ def create_and_merge_rank_week(ranking_file):
 #teams_filename = '/Users/keegan/Projects/nba_reference/NBA_Teams.csv'
 
 def read_nba_teams_ref():
-    nba_teams_ref = pd.read_csv('Dash_Deploy/support/data/nba_teams_data.csv')
+    nba_teams_ref = pd.read_csv(find_file('nba_teams_data'))
+    #nba_teams_ref = get_csv('nba_teams_data')
     return nba_teams_ref
 
 #print(read_nba_teams_ref())
@@ -117,19 +164,18 @@ def create_rk_pt(df: pd.DataFrame):
                    columns='nba_week',
                    values='ranking')
     rk_pt = rk_pt.round(2)
-
-    #print(rk_pt)
+    
+    #rk_pt will be input for graphs
     return rk_pt
 
-    #rk_pt will be input for graphs
 
 def create_filtered_df(df: pd.DataFrame, start_date,end_date=dt.today()):
-    """Filter the DataFrame to only include rows with valid NBA weeks."""
-
+    """Filter the DataFrame to only include rows with specified NBA weeks."""
     
     start_adjust = most_recent_sunday(start_date) # find most recent sunday
     end_adjust = end_date
 
+    df['date'] = pd.to_datetime(df['date'])
     df = df[df['nba_week'].notna()]
     df['nba_week'] = df['nba_week'].astype(int)
     
@@ -139,15 +185,16 @@ def create_filtered_df(df: pd.DataFrame, start_date,end_date=dt.today()):
 
 
 def df_string_for_graph():
-    ranking_file = ranking_filepath
-    df = create_season_rks_df(create_and_merge_rank_week(ranking_file))
+    #ranking_file = ranking_filepath
+    #df = create_season_rks_df(create_and_merge_rank_week(ranking_file))
+    df = create_season_rks_df(create_and_merge_rank_week())
     rk_pt = create_rk_pt(df)
   
     return rk_pt
 
 def df_string_for_graph_2(start='2024-10-20', end=dt.today()):
-    ranking_file = ranking_filepath
-    df = create_filtered_df(create_and_merge_rank_week(ranking_file), start, end)
+    ranking_file = find_file('latest_powerrankings')
+    df = create_filtered_df(create_and_merge_rank_week(), start, end)
     rk_pt = create_rk_pt(df)
   
     return rk_pt
@@ -327,8 +374,14 @@ app.layout = html.Div([
         html.H5('Created by Keegan Morris', className='byline'),
         ],id='header-div'
     ),
-    html.Div(id="date-div",
-             children=[
+    
+    html.Div(
+
+        id='graph-div',
+        children=[
+        html.Div(id="date-subdiv",
+            children=[
+                #html.H5("Date Range", id="date-label" ,className="button-label"),
                 dcc.DatePickerRange(
                     id='date-picker',
                     minimum_nights=7,
@@ -339,11 +392,7 @@ app.layout = html.Div([
                     max_date_allowed=date.today()
                 ),
                 html.Div(id="output-container")
-             ]),
-    html.Div(
-
-        id='graph-div',
-        children=[
+                ]),
         html.Div( 
             id='graph-subdiv',
             children=[
@@ -577,7 +626,7 @@ def set_xticks(value):
 
 @app.callback(
     Output('pr-graph','figure'),
-    Output('output-container','children'),
+    #Output('output-container','children'),
     Input('rank-radio', 'value'),
     Input('zone-check', 'value'),
     Input('week-day-check', 'value'),
@@ -588,7 +637,7 @@ def set_xticks(value):
 
 )
 
-def update_graph(rank_radio, zone_check,week_day_check, team_dropdown, start_date, end_date):
+def update_graph(rank_radio, zone_check,week_day_check, team_dropdown, start_date='2024-10-20', end_date=dt.today()):
 
     df = df_string_for_graph_2(start_date, end_date)
 
@@ -638,8 +687,8 @@ def update_graph(rank_radio, zone_check,week_day_check, team_dropdown, start_dat
 
     
     
-    return fig, start_end_str
-    #return fig
+    #return fig, start_end_str
+    return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True, dev_tools_hot_reload=False)
