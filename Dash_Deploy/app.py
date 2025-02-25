@@ -1,3 +1,6 @@
+
+
+
 import os
 import sys
 import subprocess
@@ -76,10 +79,10 @@ def read_nba_week():
     """Read NBA Week from reference file."""
     return pd.read_csv(WEEK_REFERENCE_PATH, parse_dates=['sunday'], dtype={'nba_week': int})
     #csv_df =  get_csv('nba_weeks_ref')
-    csv_df['sunday'] = pd.to_datetime(csv_df['sunday'])
-    csv_df['nba_week'] = pd.to_numeric(csv_df['nba_week'])
+    #csv_df['sunday'] = pd.to_datetime(csv_df['sunday'])
+    #csv_df['nba_week'] = pd.to_numeric(csv_df['nba_week'])
 
-    return csv_df
+    #return csv_df
 
 def read_ranking_file():
     """Read NBA Ranking file"""
@@ -95,7 +98,7 @@ def get_nba_week_no(date=today):
     wk = read_nba_week()
     nba_week_no = wk[wk['sunday'] <= date].nba_week.max()
 
-    return nba_week_no
+    return int(nba_week_no)
 
 def most_recent_sunday(date):
     """Find date of most recent Sunday."""
@@ -114,8 +117,6 @@ def create_and_merge_rank_week():
 
     df = pd.merge(rk, wk[['sunday', 'nba_week']], on='sunday', how='left')
     return df
-
-#teams_filename = '/Users/keegan/Projects/nba_reference/NBA_Teams.csv'
 
 def read_nba_teams_ref():
     nba_teams_ref = pd.read_csv(find_file('nba_teams_data'))
@@ -168,6 +169,8 @@ def create_rk_pt(df: pd.DataFrame):
     #rk_pt will be input for graphs
     return rk_pt
 
+#print(temp_df.types)
+
 
 def create_filtered_df(df: pd.DataFrame, start_date='2024-10-20',end_date=dt.datetime.today()):
     """Filter the DataFrame to only include rows with specified NBA weeks."""
@@ -184,8 +187,7 @@ def create_filtered_df(df: pd.DataFrame, start_date='2024-10-20',end_date=dt.dat
     return filtered_df
 
 def df_string_for_graph():
-    #ranking_file = ranking_filepath
-    #df = create_season_rks_df(create_and_merge_rank_week(ranking_file))
+
     df = create_season_rks_df(create_and_merge_rank_week())
     rk_pt = create_rk_pt(df)
   
@@ -197,6 +199,8 @@ def df_string_for_graph_2(start='2024-10-20', end=dt.datetime.today()):
     rk_pt = create_rk_pt(df)
   
     return rk_pt
+
+print(df_string_for_graph().dtypes)
 
 def get_max_min_week(start='2024-10-20', end=dt.datetime.today()):
     """Get NBA WEEK # for start and end date"""
@@ -232,6 +236,7 @@ def change_slider_marks(step):
         points += step * 24 * 3600
     return marks
 
+print(type(change_slider_marks(7)))
 
 
 
@@ -440,7 +445,7 @@ app.layout = html.Div([
     html.Div([
         html.Div([
             dcc.Graph(
-                    figure=make_fig(df_string_for_graph()), 
+                    figure=make_fig(df_string_for_graph_2()), 
                     id="pr-graph",
             ),
         ],
@@ -752,5 +757,12 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
     #return fig, start_end_str
     return fig
 
+
+# JSON check
+
+import json
+from dash.development.base_component import Component
+
+#print(f":::: {app.layout}")
 if __name__ == '__main__':
-    app.run_server(port=8021, debug=True, dev_tools_hot_reload=False)
+    app.run_server(port=8021, debug=False, dev_tools_hot_reload=False)
