@@ -7,7 +7,6 @@ from dash import Dash, dcc, html, callback, Output, Input, State
 import datetime as dt
 from datetime import date, timedelta
 import pandas as pd
-import numpy as np
 import plotly.graph_objects as go
 
 # Other imports
@@ -212,31 +211,9 @@ def sunday_lookup(week: int):
         return None
     
 ### NEED FUNCTION TO SWITCH BETWEEN TICKS AND NOT TICKS
-    
-def change_slider_marks(step):
-    """Custom slider marks"""
-    marks = {}
-
-    start_date = dt.datetime(2024, 10, 20)
-    end_date = dt.datetime(2025, 2, 24)
-
-    # convert to timestamp
-    end_timestamp = int(end_date.timestamp())
-    start_timestamp = int(start_date.timestamp())
-
-    points = start_timestamp
-
-    while points <= end_timestamp:
-        date_str = dt.datetime.fromtimestamp(points).strftime('%b %d')
-        marks[int(points)] = date_str
-        points += step * 24 * 3600
-    return marks
 
 
-
-
-
-print()
+print('--')
 #print(df_string_for_graph_2().columns.max())
     
 
@@ -298,6 +275,7 @@ def make_fig(df_piv_rk):
             x=list(range(1, len(df_piv_rk.columns)+ 1)),
             y=df_piv_rk.loc[team],
             mode='lines',
+            
             line=dict(width=2),
             name=team,
             opacity = 0.85,
@@ -495,7 +473,6 @@ app.layout = html.Div([
                                 ),
                                 html.P('1-30 is default', id="note1", className="footnote")
                             ],id="rank-range", className="button-grp"),
-                    
                             html.Div(
                                 [
                                     html.H5('Update XTicks Labels', className="button-label"),
@@ -510,6 +487,22 @@ app.layout = html.Div([
                                     )
                                 ]
                             ,id="xticks-labels", 
+                            className="button-grp"
+                            ),
+                            html.Div(
+                                [
+                                    html.H5('Mark Points', className="button-label"),
+                                    html.Div([
+                                        dcc.Checklist(
+                                            id='dot-check',
+                                            className="check-label",
+                                            options=[{'label': 'Show Marks', 'value': 'show'}],
+                                            value=['show']
+                                        ), 
+                                    ],
+                                    )
+                                ]
+                            ,id="show-dots", 
                             className="button-grp"
                             ),
                             html.Div(
@@ -694,11 +687,11 @@ def set_xticks(value):
     Input('zone-check', 'value'),
     Input('week-day-check', 'value'),
     Input('team-dropdown', 'value'),
-
+    Input('dot-check','value'),
 
 )
 
-def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_dropdown):
+def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_dropdown, dot_check):
 
     df = df_string_for_graph_2()
 
@@ -727,6 +720,14 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
             
         )
     )
+    print(dot_check)
+    if dot_check == ['show']:
+        linemode='lines+markers'
+        fig.update_traces(mode = linemode, marker=dict(size=6,))
+    else:
+        linemode = 'lines'
+        fig.update_traces(mode = linemode)
+    
     for trace in fig.data:
         additional_hover = set_hovertemplate_format(week_day_check)
         trace.hovertemplate += additional_hover + '<extra></extra>'
@@ -753,4 +754,4 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
     return fig
 
 if __name__ == '__main__':
-    app.run_server(port=8021, debug=True, dev_tools_hot_reload=False)
+    app.run_server(debug=True, dev_tools_hot_reload=False)
