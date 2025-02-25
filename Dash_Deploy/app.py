@@ -379,20 +379,6 @@ app.layout = html.Div([
 
         id='graph-div',
         children=[
-        html.Div(id="date-subdiv",
-            children=[
-                #html.H5("Date Range", id="date-label" ,className="button-label"),
-                dcc.DatePickerRange(
-                    id='date-picker',
-                    minimum_nights=7,
-                    clearable=True,
-                    start_date=date(2024,10,22),
-                    end_date=date.today(),
-                    min_date_allowed=date(2024,10,22),
-                    max_date_allowed=date.today()
-                ),
-                html.Div(id="output-container")
-                ]),
         html.Div( 
             id='graph-subdiv',
             children=[
@@ -626,24 +612,19 @@ def set_xticks(value):
 
 @app.callback(
     Output('pr-graph','figure'),
-    #Output('output-container','children'),
     Input('rank-radio', 'value'),
     Input('zone-check', 'value'),
     Input('week-day-check', 'value'),
     Input('team-dropdown', 'value'),
-    Input('date-picker', 'start_date'),
-    Input('date-picker', 'end_date'),
 
 
 )
 
-def update_graph(rank_radio, zone_check,week_day_check, team_dropdown, start_date='2024-10-20', end_date=dt.today()):
+def update_graph(rank_radio, zone_check,week_day_check, team_dropdown):
 
-    df = df_string_for_graph_2(start_date, end_date)
+    df = df_string_for_graph_2()
 
     fig = make_fig(df)
-
-    start_end_str = f"Start date: {start_date}"
 
  
     chart_settings = set_chart_yrange(rank_radio)
