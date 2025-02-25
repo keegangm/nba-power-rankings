@@ -105,10 +105,11 @@ h3{
 
 #graph-div{
     /*border: 5px solid red;*/
+    /*background-color: green;*/
     background-color: var(--whitebg);
     /*padding: 20px 15px;*/
     border-radius: var(--bordrad);
-    padding-bottom: 6px;
+    padding: 6px;
     /*margin: -5px;*/
     /*margin-top: 15px;*/
     /*padding: 5px 0;*/
@@ -116,8 +117,10 @@ h3{
 
 #graph-subdiv{
     background-color: var(--whitebg);
-    border-radius: var(--bordrad);
-    padding: 0 15px 10px 15px;
+    /*background-color: green;*/
+    /*border: 2px solid black;*/
+    /*border-radius: var(--bordrad);*/
+    padding: 2px; /*15px 10px 15px;*/
     /*z-index: 2 ;*/
 }
 
@@ -339,5 +342,26 @@ details[open] summary::after{
 
 }
 
+#slider-grp-div{
+    /*background-color: green;*/
+    /*border: 2px solid black;*/
+    padding: 0 30px 30px 30px;
+}
+
+#slider-div{
+    max-width: 80%;
+    margin:auto;
+}
+
+#output-container{
+    text-align: center;
+}
 /* DatePicker */
+#rc-slider-mark-text{
+    color: green;
+}
+
+#rc-slider-mark-text-active {
+    font-weight: 700 !important;
+}
 

@@ -169,7 +169,7 @@ def create_rk_pt(df: pd.DataFrame):
     return rk_pt
 
 
-def create_filtered_df(df: pd.DataFrame, start_date,end_date=dt.today()):
+def create_filtered_df(df: pd.DataFrame, start_date='2024-10-20',end_date=dt.today()):
     """Filter the DataFrame to only include rows with specified NBA weeks."""
     
     start_adjust = most_recent_sunday(start_date) # find most recent sunday
@@ -182,7 +182,6 @@ def create_filtered_df(df: pd.DataFrame, start_date,end_date=dt.today()):
     filtered_df = df[(df.date >= start_adjust) & (df.date <= end_adjust)]
     
     return filtered_df
-
 
 def df_string_for_graph():
     #ranking_file = ranking_filepath
@@ -198,6 +197,14 @@ def df_string_for_graph_2(start='2024-10-20', end=dt.today()):
     rk_pt = create_rk_pt(df)
   
     return rk_pt
+
+def get_max_min_week(start='2024-10-20', end=dt.today()):
+    """Get NBA WEEK # for start and end date"""
+
+    return get_nba_week_no(end), get_nba_week_no(start) 
+
+print()
+#print(df_string_for_graph_2().columns.max())
     
 def sunday_lookup(week: int):
     """Lookup date for Sunday of week number."""
@@ -279,6 +286,8 @@ def make_fig(df_piv_rk):
         team_traces.append({"team":team, "conference":conference, "division": division})
 
     weeks_array, sundays_array = create_sundays_array()
+
+    #print(weeks_array, sundays_array)
     sundays_str = [date.strftime('%Y-%m-%d') for date in sundays_array]
     fig.update_layout(
         autosize=True,
@@ -375,24 +384,28 @@ app.layout = html.Div([
         ],id='header-div'
     ),
     
-    html.Div(
-
-        id='graph-div',
-        children=[
-        html.Div( 
-            id='graph-subdiv',
-            children=[
+    html.Div([
+        html.Div([
             dcc.Graph(
-                figure=make_fig(df_string_for_graph()), 
-                id="pr-graph",
+                    figure=make_fig(df_string_for_graph()), 
+                    id="pr-graph",
+        )],
+                id='graph-subdiv',
             ),
-            ]
-        ),
-        html.Div(
-            id="legend-div",
-            style={"width": "200px"}, 
-        ),
-]),
+        html.Div([
+            html.Div(
+                html.H5('Select Range'),
+                id="slider-header-div",
+            ),
+            html.Div(
+                dcc.RangeSlider(min=(get_max_min_week()[1]), max=(get_max_min_week()[0]),step= 1, value=[get_max_min_week()[1], get_max_min_week()[0]], id='date-range-slider'),
+                id="slider-div",
+            ),
+            html.Div(id="output-container")
+        ], id="slider-grp-div"),
+        ],
+        id='graph-div',
+    ),
     html.Div([    
         html.Div([
             #html.Details("filters"),
@@ -612,6 +625,8 @@ def set_xticks(value):
 
 @app.callback(
     Output('pr-graph','figure'),
+    Output('output-container', 'children'),
+    Input('date-range-slider', 'value'),
     Input('rank-radio', 'value'),
     Input('zone-check', 'value'),
     Input('week-day-check', 'value'),
@@ -620,7 +635,7 @@ def set_xticks(value):
 
 )
 
-def update_graph(rank_radio, zone_check,week_day_check, team_dropdown):
+def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_dropdown):
 
     df = df_string_for_graph_2()
 
@@ -633,6 +648,8 @@ def update_graph(rank_radio, zone_check,week_day_check, team_dropdown):
     chart_tickvals=chart_settings[2]
     title_standoff=chart_settings[3]
 
+    start_date = date_range_slider[0]
+    end_date = date_range_slider[1]
     fig.update_layout(
         yaxis=dict(
             range=chart_yrange,
@@ -643,6 +660,7 @@ def update_graph(rank_radio, zone_check,week_day_check, team_dropdown):
         ),
         xaxis= dict(
             set_xticks(week_day_check),
+            range=[start_date, end_date]
             
         )
     )
@@ -665,11 +683,11 @@ def update_graph(rank_radio, zone_check,week_day_check, team_dropdown):
     #if date_value is not None:
     #    date_object = date.fromisoformat()
     
-
-    
+    #text = 'You have selected "{}"'.format(date_range_slider0, text-[1])
+    text= f"{start_date} to {end_date}"
     
     #return fig, start_end_str
-    return fig
+    return fig, text
 
 if __name__ == '__main__':
     app.run_server(debug=True, dev_tools_hot_reload=False)
