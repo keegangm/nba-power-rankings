@@ -447,10 +447,10 @@ app.layout = html.Div([
                 id='graph-subdiv',
             ),
         html.Div([
-            html.Div(
-                html.H5('Select Range'),
-                id="slider-header-div",
-            ),
+            #html.Div(
+            #    html.H5('Select Range'),
+            #    id="slider-header-div",
+            #),
             html.Div([
                 
                 dcc.RangeSlider(
