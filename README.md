@@ -11,9 +11,9 @@ I love the NBA and am fascinated by how different media outlets evaluate teams t
 ➡️ Explore the interactive (and ongoing) visualization [at this link](https://keegangm.github.io/nba-power-rankings/Output/html/power_rankings_filters.html).
 
 ## Features
-- 🕵️ **Web Scraping**: Using `BeautifulSoup` to extract rankings from multiple sources.
-- 🧹 **Data Processing**: Cleaning, structuring, and aggregaitng the data using `pandas`.
-- 〰️ **Visualization**: Creating crisp, engaging visualizations with `Plotly`.
+- 🔭 **Web Scraping**: Using `BeautifulSoup` to extract rankings from multiple sources.
+- 🧹 **Data Processing**: Cleaning, structuring, and aggregating the data using `pandas`.
+- 📍 **Visualization**: Creating crisp, engaging visualizations with `Plotly`.
 - 🎛️ **Interactivity**: Building interactive web app using `Dash`
 
 ➡️ For more insights, visit [keegan-morris.com](https://keegan-morris.com/tag/power-rankings-project/).
