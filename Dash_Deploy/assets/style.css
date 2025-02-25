@@ -350,6 +350,8 @@ details[open] summary::after{
 
 #slider-div{
     max-width: 80%;
+    padding-bottom: 40px;
+    padding-top: 0px;
     margin:auto;
 }
 
@@ -357,11 +359,32 @@ details[open] summary::after{
     text-align: center;
 }
 /* DatePicker */
-#rc-slider-mark-text{
-    color: green;
+.rc-slider-mark-text{
+    color:
 }
 
-#rc-slider-mark-text-active {
-    font-weight: 700 !important;
+.rc-slider-mark-text-active {
+    font-weight: 500 !important;
 }
 
+.rc-slider-track {
+    background-color: var(--accentcolor);
+  }
+  
+.rc-slider-dot-active {  
+    border-color: var(--accentcolor);
+    border: solid 2px var(--accentcolor);
+  }
+  
+.rc-slider-handle {
+    background-color: var(--accentcolor);
+    border-color: var(--accentcolor);
+  }
+  
+.rc-slider-handle:hover {
+    border-color: var(--accentcolor);
+  }
+  
+.rc-slider-handle-active:active {
+    border-color: var(--accentcolor);
+  }

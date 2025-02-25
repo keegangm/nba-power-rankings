@@ -11,7 +11,7 @@
 - [x] XY Ticks labels too big
 - [x] Filters header needs changing
 - [x] Change hover to show "Week:" when week is selected
-- [ ] Date selectors
+- [x] Date selectors
  
 ### Features
 - [ ] Animate over time

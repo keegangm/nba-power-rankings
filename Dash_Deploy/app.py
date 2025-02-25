@@ -4,8 +4,8 @@ import subprocess
 
 # Dash imports
 from dash import Dash, dcc, html, callback, Output, Input, State
-from datetime import datetime as dt
-from datetime import date
+import datetime as dt
+from datetime import date, timedelta
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -88,7 +88,7 @@ def read_ranking_file():
     rk = pd.read_csv(find_file('latest_powerrankings'), parse_dates=['date'], date_format="%y%m%d") # 02-Dec-24
     return rk
 
-today = dt.today()
+today = dt.datetime.today()
 
 def get_nba_week_no(date=today):
     """Get NBA Week number"""
@@ -129,7 +129,7 @@ def clean_date(raw_date=None):
     if raw_date is not None:
         input_date = parse(raw_date)
     else:
-        input_date = dt.today()
+        input_date = dt.datetime.today()
 
     parsed_date = input_date.strftime("%b %d, %Y")
     return parsed_date
@@ -169,7 +169,7 @@ def create_rk_pt(df: pd.DataFrame):
     return rk_pt
 
 
-def create_filtered_df(df: pd.DataFrame, start_date='2024-10-20',end_date=dt.today()):
+def create_filtered_df(df: pd.DataFrame, start_date='2024-10-20',end_date=dt.datetime.today()):
     """Filter the DataFrame to only include rows with specified NBA weeks."""
     
     start_adjust = most_recent_sunday(start_date) # find most recent sunday
@@ -191,21 +191,18 @@ def df_string_for_graph():
   
     return rk_pt
 
-def df_string_for_graph_2(start='2024-10-20', end=dt.today()):
+def df_string_for_graph_2(start='2024-10-20', end=dt.datetime.today()):
     ranking_file = find_file('latest_powerrankings')
     df = create_filtered_df(create_and_merge_rank_week(), start, end)
     rk_pt = create_rk_pt(df)
   
     return rk_pt
 
-def get_max_min_week(start='2024-10-20', end=dt.today()):
+def get_max_min_week(start='2024-10-20', end=dt.datetime.today()):
     """Get NBA WEEK # for start and end date"""
 
     return get_nba_week_no(end), get_nba_week_no(start) 
 
-print()
-#print(df_string_for_graph_2().columns.max())
-    
 def sunday_lookup(week: int):
     """Lookup date for Sunday of week number."""
     try:
@@ -213,6 +210,35 @@ def sunday_lookup(week: int):
         return (wk.loc[wk['nba_week'] == week, 'sunday']).item()
     except:
         return None
+    
+### NEED FUNCTION TO SWITCH BETWEEN TICKS AND NOT TICKS
+    
+def change_slider_marks(step):
+    """Custom slider marks"""
+    marks = {}
+
+    start_date = dt.datetime(2024, 10, 20)
+    end_date = dt.datetime(2025, 2, 24)
+
+    # convert to timestamp
+    end_timestamp = int(end_date.timestamp())
+    start_timestamp = int(start_date.timestamp())
+
+    points = start_timestamp
+
+    while points <= end_timestamp:
+        date_str = dt.datetime.fromtimestamp(points).strftime('%b %d')
+        marks[int(points)] = date_str
+        points += step * 24 * 3600
+    return marks
+
+
+
+
+
+print()
+#print(df_string_for_graph_2().columns.max())
+    
 
 def create_sundays_array():
     """Create arrays of Sundays and corresponding NBA week #s."""
@@ -369,6 +395,34 @@ def make_fig(df_piv_rk):
     )
     return fig
 
+# Define date range
+start_date = dt.datetime(2024, 10, 20)
+end_date = dt.datetime.today()
+
+# Convert to integer timestamps
+start_timestamp = int(start_date.timestamp())
+end_timestamp = int(end_date.timestamp())
+
+def get_marks(start=start_timestamp, end=end_timestamp, step=7):
+    """Generate timestamp marks of step."""
+    marks = {}
+    current = start
+    while current <= end:
+        date_str = dt.datetime.fromtimestamp(current).strftime('%m-%d')
+        marks[int(current)] = date_str  
+        current += step * 24 * 3600 
+    return marks
+
+def get_marks_wk(start=start_date, end=end_date, step=7):
+    """Generate date marks of step."""
+    marks = {}
+    current = start 
+    while current <= end: 
+        week_no = get_nba_week_no(current) 
+        marks[week_no] = current.strftime('%m-%d')  
+        current += timedelta(days=step)  
+    return marks
+
 
 ##### APP #####
 app = Dash(__name__)
@@ -383,13 +437,13 @@ app.layout = html.Div([
         html.H5('Created by Keegan Morris', className='byline'),
         ],id='header-div'
     ),
-    
     html.Div([
         html.Div([
             dcc.Graph(
                     figure=make_fig(df_string_for_graph()), 
                     id="pr-graph",
-        )],
+            ),
+        ],
                 id='graph-subdiv',
             ),
         html.Div([
@@ -397,15 +451,23 @@ app.layout = html.Div([
                 html.H5('Select Range'),
                 id="slider-header-div",
             ),
-            html.Div(
-                dcc.RangeSlider(min=(get_max_min_week()[1]), max=(get_max_min_week()[0]),step= 1, value=[get_max_min_week()[1], get_max_min_week()[0]], id='date-range-slider'),
-                id="slider-div",
+            html.Div([
+                
+                dcc.RangeSlider(
+                    min=get_nba_week_no(start_date), 
+                    max=get_nba_week_no(end_date),
+                    step= 1, 
+                    value=[get_nba_week_no(start_date), get_nba_week_no(end_date)], 
+                    #marks=marks,
+                    marks =  get_marks_wk(start_date,end_date, step=14),
+                    id='date-range-slider-wk',
+                ),
+            ],
+            id="slider-div",
             ),
-            html.Div(id="output-container")
-        ], id="slider-grp-div"),
-        ],
-        id='graph-div',
-    ),
+        ]),
+            #html.Div(id="output-container")
+    ], id='graph-div'),
     html.Div([    
         html.Div([
             #html.Details("filters"),
@@ -490,12 +552,13 @@ app.layout = html.Div([
                     ),],
                     id='lower-section'),]),
     ]),
-    html.Div(id="text-attribution",
-             children=[
-                 dcc.Markdown('''Created by [Keegan Morris](https://keegan-morris.com/)''',link_target="_blank", id='attrib-markdown'),
-                 html.P(f"Updated {clean_date()}", id='attrib-date')
-             ]),
-], id='app-div')
+    html.Div(
+        id="text-attribution",
+        children=[
+            dcc.Markdown('''Created by [Keegan Morris](https://keegan-morris.com/)''',link_target="_blank", id='attrib-markdown'),
+            html.P(f"Updated {clean_date()}", id='attrib-date')         
+    ]),
+])
 
 def drilldown_update_layout(value):
     teams = read_nba_teams_ref()
@@ -625,8 +688,8 @@ def set_xticks(value):
 
 @app.callback(
     Output('pr-graph','figure'),
-    Output('output-container', 'children'),
-    Input('date-range-slider', 'value'),
+    #Output('output-container', 'children'),
+    Input('date-range-slider-wk', 'value'),
     Input('rank-radio', 'value'),
     Input('zone-check', 'value'),
     Input('week-day-check', 'value'),
@@ -687,7 +750,7 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
     text= f"{start_date} to {end_date}"
     
     #return fig, start_end_str
-    return fig, text
+    return fig
 
 if __name__ == '__main__':
-    app.run_server(debug=True, dev_tools_hot_reload=False)
+    app.run_server(port=8021, debug=True, dev_tools_hot_reload=False)
