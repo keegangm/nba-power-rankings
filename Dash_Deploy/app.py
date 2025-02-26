@@ -720,7 +720,7 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
             
         )
     )
-    print(dot_check)
+    #print(dot_check)
     if dot_check == ['show']:
         linemode='lines+markers'
         fig.update_traces(mode = linemode, marker=dict(size=6,))
