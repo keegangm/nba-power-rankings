@@ -1,6 +1,3 @@
-
-
-
 import os
 import sys
 import subprocess
@@ -30,58 +27,11 @@ def find_file(file_name):
 
     return None  # File not found in either path
 
-# Print results
-
-
-#def get_csv(input):
-#    if input == 'nba_weeks_ref':
-#        path_end = "support/data/nba_weeks_ref.csv" #, parse_dates=['sunday'], dtype={'nba_week': int}"
-#    if input == 'latest_powerrankings':
-#        path_end = "support/data/latest_powerrankings.csv" # , parse_dates=['date'], date_format='%y%m%d')"
-#    if input == 'nba_teams_data':
-#        path_end = 'support/data/nba_teams_data.csv'
-
-#    else:
-#        path_end is None
-
-#    try:
-#        path = path_end
-#        csvfile = pd.read_csv(path)
-#    except:
-#        path = 'Dash_Deploy/' + path_end
-#        csvfile = pd.read_csv(path)
-
-#    return csvfile
-#def find_latest_file(folder, extension=''):
-#    """Find latest file in specified folder."""
-#    if extension:
-#        file_location = folder+ '/*.' + extension
-#    else:
-#        file_location = folder + '/*' + extension
-#    list_of_files = glob.glob(file_location)
-
-#    if list_of_files:
-#        latest_file = max(list_of_files, key=os.path.getctime)
-#        #print(latest_file)
-#        return latest_file
-
-#    else:
-#        return f"Found no files with extension '{extension}' in '{folder}'"
-
-#ranking_filepath = 'Dash_Deploy/support/data/latest_powerrankings.csv'
-#ranking_filepath = 'Dash_Deploy/support/data/latest_powerrankings.csv'
-#ranking_filepath = get_path('latest_powerrankings')
-#ranking_filepath = get_csv('latest_powerrankings')
 WEEK_REFERENCE_PATH = find_file('nba_weeks_ref')
 
 def read_nba_week():    
     """Read NBA Week from reference file."""
     return pd.read_csv(WEEK_REFERENCE_PATH, parse_dates=['sunday'], dtype={'nba_week': int})
-    #csv_df =  get_csv('nba_weeks_ref')
-    #csv_df['sunday'] = pd.to_datetime(csv_df['sunday'])
-    #csv_df['nba_week'] = pd.to_numeric(csv_df['nba_week'])
-
-    #return csv_df
 
 def read_ranking_file():
     """Read NBA Ranking file"""
@@ -102,7 +52,6 @@ def get_nba_week_no(date=today):
 def most_recent_sunday(date):
     """Find date of most recent Sunday."""
     date = pd.to_datetime(date)
-    #return date
     return date - pd.to_timedelta(date.weekday() + 1, unit='D')
 
 def create_and_merge_rank_week():
@@ -121,8 +70,6 @@ def read_nba_teams_ref():
     nba_teams_ref = pd.read_csv(find_file('nba_teams_data'))
     #nba_teams_ref = get_csv('nba_teams_data')
     return nba_teams_ref
-
-#print(read_nba_teams_ref())
 
 def clean_date(raw_date=None):
     """ Get an external-friendly date in format 'Jan 24, 2025'. """
@@ -168,9 +115,6 @@ def create_rk_pt(df: pd.DataFrame):
     #rk_pt will be input for graphs
     return rk_pt
 
-#print(temp_df.types)
-
-
 def create_filtered_df(df: pd.DataFrame, start_date='2024-10-20',end_date=dt.datetime.today()):
     """Filter the DataFrame to only include rows with specified NBA weeks."""
     
@@ -199,8 +143,6 @@ def df_string_for_graph_2(start='2024-10-20', end=dt.datetime.today()):
   
     return rk_pt
 
-print(df_string_for_graph().dtypes)
-
 def get_max_min_week(start='2024-10-20', end=dt.datetime.today()):
     """Get NBA WEEK # for start and end date"""
 
@@ -213,9 +155,7 @@ def sunday_lookup(week: int):
         return (wk.loc[wk['nba_week'] == week, 'sunday']).item()
     except:
         return None
-    
-### NEED FUNCTION TO SWITCH BETWEEN TICKS AND NOT TICKS
-    
+        
 def change_slider_marks(step):
     """Custom slider marks"""
     marks = {}
@@ -234,15 +174,6 @@ def change_slider_marks(step):
         marks[int(points)] = date_str
         points += step * 24 * 3600
     return marks
-
-print(type(change_slider_marks(7)))
-
-
-
-
-print()
-#print(df_string_for_graph_2().columns.max())
-    
 
 def create_sundays_array():
     """Create arrays of Sundays and corresponding NBA week #s."""
@@ -308,17 +239,16 @@ def make_fig(df_piv_rk):
             opacity = 0.85,
             marker_color=teams.team_color1(team),
             hovertemplate=base_hover,
-            #hovertemplate=f"<b>{team.upper()}</b>" + '<br><b>date</b>: %{x}<br><b>rank</b>: %{y}<extra></extra>',
+    
             visible=True,
             showlegend=True,
-            #legendgroup=team,
+
         )
         fig.add_trace(trace)
         team_traces.append({"team":team, "conference":conference, "division": division})
 
     weeks_array, sundays_array = create_sundays_array()
 
-    #print(weeks_array, sundays_array)
     sundays_str = [date.strftime('%Y-%m-%d') for date in sundays_array]
     fig.update_layout(
         autosize=True,
@@ -336,15 +266,13 @@ def make_fig(df_piv_rk):
             domain=[0.1,0.85],
             tickmode='array',
             tickvals=weeks_array,
-            #ticktext=sundays_str,
-            #nticks = 5,
             title=dict(
                 text="<b>Date</b>",
                 font_size=18,
             ),
             
             tickfont=dict(
-                size=12  # Adjust tick label size (x-axis)
+                size=12  
             ),
             tickangle=70,
             showline=True,
@@ -357,12 +285,12 @@ def make_fig(df_piv_rk):
                 font_size=18,
             ),
             tickfont=dict(
-                size=12  # Adjust tick label size (x-axis)
+                size=12  
             ),
           
             tickmode = 'array',
             tickvals = def_tickvals,
-            range=[30.5,0.5], # manual range — 1 as top, adds top- / bottom-padding for readability
+            range=[30.5,0.5], 
             
             domain=[0.1,1],
             showline=True,
@@ -452,12 +380,7 @@ app.layout = html.Div([
                 id='graph-subdiv',
             ),
         html.Div([
-            #html.Div(
-            #    html.H5('Select Range'),
-            #    id="slider-header-div",
-            #),
             html.Div([
-                
                 dcc.RangeSlider(
                     min=get_nba_week_no(start_date), 
                     max=get_nba_week_no(end_date),
@@ -471,17 +394,11 @@ app.layout = html.Div([
             id="slider-div",
             ),
         ]),
-            #html.Div(id="output-container")
     ], id='graph-div'),
     html.Div([    
         html.Div([
-            #html.Details("filters"),
             html.Details([
                 html.Summary("Filters"),
-            #html.H3(
-            #    'Filters',
-            #    className='section-head', id='section-head-filters',
-            #),
                 html.Div(className="button-array-html",
                         children=[
                             
@@ -558,8 +475,6 @@ app.layout = html.Div([
                                             className="check-label",
                                             value="All Teams",
                                             clearable=False
-                                            #options=[{'label': 'Top & Bottom 5', 'value': 'linear'}],
-                                            #value=['zone']
                                         ), 
                                     ],id='team-dropdown-div'
                                     )
@@ -595,9 +510,9 @@ def drilldown_update_layout(value):
         if value == "All Teams":
             visibility.append(True)  # Show all traces
         else:
-            visibility.append(value in [team, conf, div])  # Show only matching traces
+            visibility.append(value in [team, conf, div]) 
 
-    return [{"visible": v} for v in visibility]  # Return a list of individual updates
+    return [{"visible": v} for v in visibility] 
 
 def set_chart_yrange(value):
     """Update chart y_range based from radio button input."""
@@ -630,9 +545,9 @@ def zone_check_rect(value):
         r_dict = [
         {
                 # bottom-5 rect
-                "type": "rect",  # Define the shape as a rectangle
-                "x0": 0,  # Set x-axis start position (you can adjust)
-                "x1": 1,  # Set x-axis end position (you can adjust)
+                "type": "rect",
+                "x0": 0,
+                "x1": 1, 
                 "y0": 26, 
                 "y1": 30, 
                 "fillcolor": "slategrey", 
@@ -642,9 +557,9 @@ def zone_check_rect(value):
             },
             {
                 # top-5 rect
-                "type": "rect",  # Define the shape as a rectangle
-                "x0": 0,  # Set x-axis start position (you can adjust)
-                "x1": 1,  # Set x-axis end position (you can adjust)
+                "type": "rect", 
+                "x0": 0, 
+                "x1": 1, 
                 "y0": 1, 
                 "y1": 5, 
                 "fillcolor": "slategrey", 
@@ -660,7 +575,6 @@ def zone_check_rect(value):
 
 def set_hovertemplate_format(value):
     if value == ['dates', 'linear']:
-        #['dates', 'linear'] is the output if the weeks is selected
         hovertemplate_btmlines = '<br><b>week</b>: %{x}<br><b>rank</b>: %{y}'
     else: 
         hovertemplate_btmlines = '<br><b>date</b>: %{x}<br><b>rank</b>: %{y}'
@@ -680,35 +594,31 @@ def set_xticks(value):
                 text="<b>Week</b>",
                 font_size=18,
             ),
-            #title_standoff=73,
             tickmode='array',
-            tickvals=weeks_array,  # Use Unix timestamp for tickvals
-            ticktext=weeks_array,  # Display string representation of the date
+            tickvals=weeks_array,  
+            ticktext=weeks_array, 
             dtick = 5,
             tickfont=dict(
-                size=12  # Adjust tick label size (x-axis)
+                size=12  
             ),
             tickangle=0,
         )
     else:
         xticks_set = dict(
 
-            ## REmove year
-            #title="<b>Days</b>",
+
             tickmode='array',
-            #font_size=16,
-            tickvals=weeks_array,  # Use Unix timestamp for tickvals
+            tickvals=weeks_array, 
             ticktext=sundays_str, 
-            dtick = 14, # Display string representation of the date
+            dtick = 14,
             tickfont=dict(
-                size=12  # Adjust tick label size (x-axis)
+                size=12
             )
         )
     return xticks_set
 
 @app.callback(
     Output('pr-graph','figure'),
-    #Output('output-container', 'children'),
     Input('date-range-slider-wk', 'value'),
     Input('rank-radio', 'value'),
     Input('zone-check', 'value'),
@@ -737,7 +647,6 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
         yaxis=dict(
             range=chart_yrange,
             dtick=chart_dtick,
-            #ytick_size=12px,
             tickvals=chart_tickvals,
             title_standoff=title_standoff
         ),
@@ -770,22 +679,8 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
         for rect in rectangles:
             fig.add_hrect(**rect)
 
-    string_prefix="You have selected: "
-    #if date_value is not None:
-    #    date_object = date.fromisoformat()
-    
-    #text = 'You have selected "{}"'.format(date_range_slider0, text-[1])
-    text= f"{start_date} to {end_date}"
-    
-    #return fig, start_end_str
     return fig
 
 
-# JSON check
-
-import json
-from dash.development.base_component import Component
-
-#print(f":::: {app.layout}")
 if __name__ == '__main__':
-    app.run_server(port=8021, debug=False, dev_tools_hot_reload=False)
+    app.run_server(debug=False, dev_tools_hot_reload=False)
