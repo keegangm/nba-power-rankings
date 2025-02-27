@@ -8,7 +8,7 @@ This project scrapes and visualizes power rankings from leading sports outlets.
 
 I love the NBA and am fascinated by how different media outlets evaluate teams throughout the season. This project gathers rankings from leading sports outlets, cleans the data, and creates interactive visualizations to explore trends and biases in coverage. By examining rankings from multiple perspectives, I can uncover patterns, discrepancies, and shifts in team perception over time.
 
-➡️ Explore the interactive (and ongoing) visualization [at this link](https://keegangm.github.io/nba-power-rankings/Output/html/power_rankings_filters.html).
+➡️ Explore the interactive (and ongoing) visualization [at this link](https://nba-power-rankings.onrender.com/).
 
 ## Features
 - 🔭 **Web Scraping**: Using `BeautifulSoup` to extract rankings from multiple sources.
