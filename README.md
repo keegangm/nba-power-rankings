@@ -22,9 +22,9 @@ I love the NBA and am fascinated by how different media outlets evaluate teams t
 - [**Bleacher Report**](https://bleacherreport.com/nba)
 - [**CBS Sports**](https://www.cbssports.com/nba/)
 - [**ESPN**](https://www.espn.com/nba/)
-- [**Fox Sports**](https://www.foxsports.com/nba)
+- [**FOX Sports**](https://www.foxsports.com/nba)
 - [**NBA.com**](https://www.nba.com/news/)
-- [**TheScore**](https://www.thescore.com/nba/news)
+- [**theScore**](https://www.thescore.com/nba/news)
 
 
 ## Related Projects
