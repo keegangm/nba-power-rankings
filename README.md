@@ -29,4 +29,4 @@ I love the NBA and am fascinated by how different media outlets evaluate teams t
 
 ## Related Projects
 
-- **[NBA Jersey Sponsors Analysis](https://github.com/keegangm/nba_sponsors)**: My visual deep dive into NBA jersey sponsorship deals
+- 🖼️ **[NBA Jersey Sponsors, Visualized](https://keegan-morris.com/2025/02/17/nba-jersey-sponsors-analyzed/)**: A data viz deep dive into NBA jersey sponsorship deals
