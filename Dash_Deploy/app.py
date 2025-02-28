@@ -143,6 +143,8 @@ def df_string_for_graph_2(start='2024-10-20', end=dt.datetime.today()):
   
     return rk_pt
 
+print(df_string_for_graph_2())
+
 def get_max_min_week(start='2024-10-20', end=dt.datetime.today()):
     """Get NBA WEEK # for start and end date"""
 

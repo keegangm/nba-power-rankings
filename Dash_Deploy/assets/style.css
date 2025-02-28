@@ -359,9 +359,9 @@ details[open] summary::after{
     text-align: center;
 }
 /* DatePicker */
-.rc-slider-mark-text{
+/*.rc-slider-mark-text{
     color:
-}
+}*/
 
 .rc-slider-mark-text-active {
     font-weight: 500 !important;

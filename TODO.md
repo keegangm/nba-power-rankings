@@ -3,6 +3,8 @@
 > #### [Project Landing Page](https://github.com/keegangm/nba-power-rankings)
 
 ### Formatting
+- [ ] Add padding to body
+- [ ] Legend alignment in narrower breakpoints
 - [x] Maintain legend width when drilled down
 - [x] Maintain YTick label width even when single-digit values
 - [x] Fix attribution alignment
@@ -18,3 +20,5 @@
 - [ ] Add team records / strength of schedule
 - [ ] Add event annotations
 - [ ] Add climbers / fallers
+- [ ] Filter by source
+- [ ] Individual team profiles
