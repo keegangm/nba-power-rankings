@@ -299,7 +299,7 @@ details[open] summary::after{
     font-style: italic;
     text-align:right;
     padding-right: 20px;
-    line-height: 3px;
+    line-height: 5px;
     display:block;
     padding-bottom: 15px;
 }

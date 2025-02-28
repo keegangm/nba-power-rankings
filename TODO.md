@@ -4,7 +4,7 @@
 
 ### Formatting
 - [x] Add padding to body
-- [ ] Legend alignment in narrower breakpoints
+- [x] Legend alignment in narrower breakpoints
 - [ ] Maintain trace focus when reframing graph (i.e. "Miami" stays as the only trace when the range slider is used)
 - [x] Maintain legend width when drilled down
 - [x] Maintain YTick label width even when single-digit values
