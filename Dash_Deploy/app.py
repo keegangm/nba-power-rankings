@@ -11,8 +11,8 @@ import plotly.graph_objects as go
 
 # Other imports
 import support.nba_teams as teams
-import glob
 from dateutil.parser import parse
+import pytz
 
 def find_file(file_name):
     file_name = f"{file_name}.csv"
@@ -40,7 +40,9 @@ def read_ranking_file():
     rk = pd.read_csv(find_file('latest_powerrankings'), parse_dates=['date'], date_format="%y%m%d") # 02-Dec-24
     return rk
 
-today = dt.datetime.today()
+us_central_tz = pytz.timezone('US/Central')
+today = dt.datetime.now(us_central_tz).date()
+#print(today)
 
 def get_nba_week_no(date=today):
     """Get NBA Week number"""
@@ -76,10 +78,11 @@ def clean_date(raw_date=None):
     if raw_date is not None:
         input_date = parse(raw_date)
     else:
-        input_date = dt.datetime.today()
+        input_date = dt.datetime.now(us_central_tz).date()
 
-    parsed_date = input_date.strftime("%b %d, %Y")
+    parsed_date = input_date.strftime("%b. %d, %Y")
     return parsed_date
+
 
 def create_season_rks_df(df: pd.DataFrame):
     """Filter the DataFrame to only include rows with valid NBA weeks."""
@@ -142,8 +145,6 @@ def df_string_for_graph_2(start='2024-10-20', end=dt.datetime.today()):
     rk_pt = create_rk_pt(df)
   
     return rk_pt
-
-print(df_string_for_graph_2())
 
 def get_max_min_week(start='2024-10-20', end=dt.datetime.today()):
     """Get NBA WEEK # for start and end date"""
@@ -492,7 +493,7 @@ app.layout = html.Div([
     html.Div(
         id="text-attribution",
         children=[
-            dcc.Markdown('''Created by [Keegan Morris](https://keegan-morris.com/)''',link_target="_blank", id='attrib-markdown'),
+            dcc.Markdown('''Visit [GitHub](https://github.com/keegangm/nba-power-rankings/) for more information''',link_target="_blank", id='attrib-markdown'),
             html.P(f"Updated {clean_date()}", id='attrib-date')         
     ]),
 ])
