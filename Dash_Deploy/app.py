@@ -51,6 +51,7 @@ def get_nba_week_no(date=today):
 
     return int(nba_week_no)
 
+
 def most_recent_sunday(date):
     """Find date of most recent Sunday."""
     date = pd.to_datetime(date)
@@ -118,6 +119,8 @@ def create_rk_pt(df: pd.DataFrame):
     #rk_pt will be input for graphs
     return rk_pt
 
+
+
 def create_filtered_df(df: pd.DataFrame, start_date='2024-10-20',end_date=dt.datetime.today()):
     """Filter the DataFrame to only include rows with specified NBA weeks."""
     
@@ -146,6 +149,7 @@ def df_string_for_graph_2(start='2024-10-20', end=dt.datetime.today()):
   
     return rk_pt
 
+
 def get_max_min_week(start='2024-10-20', end=dt.datetime.today()):
     """Get NBA WEEK # for start and end date"""
 
@@ -173,7 +177,7 @@ def change_slider_marks(step):
     points = start_timestamp
 
     while points <= end_timestamp:
-        date_str = dt.datetime.fromtimestamp(points).strftime('%b %d')
+        date_str = dt.datetime.fromtimestamp(points)
         marks[int(points)] = date_str
         points += step * 24 * 3600
     return marks
@@ -184,9 +188,11 @@ def create_sundays_array():
     sundays_array = []
     for i in range(-5, 30):
         weeks_array.append(i)
+        #sundays_array.append(sunday_lookup(i)+1)
         sundays_array.append(sunday_lookup(i))
 
     return weeks_array, sundays_array
+
 
 def make_drilldown_options():
     teams = read_nba_teams_ref()
@@ -216,6 +222,8 @@ def make_drilldown_options():
 
     return drilldown_options
 
+
+
 def make_fig(df_piv_rk):
     fig = go.Figure()
 
@@ -233,10 +241,13 @@ def make_fig(df_piv_rk):
         
         #print(f"Adding trace for: {team}")
         trace = go.Scatter(
-            x=list(range(1, len(df_piv_rk.columns)+ 1)),
+            #x=list(range(0, len(df_piv_rk.columns)+ 1)),
+            #x=list(range(1, len(df_piv_rk.columns)+ 1)),
+            x=list(range(1, len(df_piv_rk.columns))),
             y=df_piv_rk.loc[team],
-            mode='lines',
-            
+            mode='lines+markers',
+            marker=dict(size=6,),
+
             line=dict(width=2),
             name=team,
             opacity = 0.85,
@@ -252,7 +263,7 @@ def make_fig(df_piv_rk):
 
     weeks_array, sundays_array = create_sundays_array()
 
-    sundays_str = [date.strftime('%Y-%m-%d') for date in sundays_array]
+    sundays_str = [date.strftime('%b. %d') for date in sundays_array]
     fig.update_layout(
         autosize=True,
         height=620,
@@ -269,6 +280,7 @@ def make_fig(df_piv_rk):
             domain=[0.1,0.85],
             tickmode='array',
             tickvals=weeks_array,
+            ticktext=sundays_str,
             title=dict(
                 text="<b>Date</b>",
                 font_size=18,
@@ -344,7 +356,7 @@ def get_marks(start=start_timestamp, end=end_timestamp, step=7):
     marks = {}
     current = start
     while current <= end:
-        date_str = dt.datetime.fromtimestamp(current).strftime('%m-%d')
+        date_str = dt.datetime.fromtimestamp(current).strftime('%b. %-d')
         marks[int(current)] = date_str  
         current += step * 24 * 3600 
     return marks
@@ -355,7 +367,7 @@ def get_marks_wk(start=start_date, end=end_date, step=7):
     current = start 
     while current <= end: 
         week_no = get_nba_week_no(current) 
-        marks[week_no] = current.strftime('%m-%d')  
+        marks[week_no] = current.strftime('%b. %-d')  
         current += timedelta(days=step)  
     return marks
 
@@ -584,10 +596,11 @@ def set_hovertemplate_format(value):
 
     return hovertemplate_btmlines
 
+
 def set_xticks(value):
     """Alternate between date and nba_week # XTick labels."""
     weeks_array, sundays_array = create_sundays_array()
-    sundays_str = [date.strftime('%Y-%m-%d') for date in sundays_array]
+    sundays_str = [date.strftime('%b. %-d') for date in sundays_array]
 
     if value == ['dates', 'linear']:
         # Convert sundays_array to strings in the format 'YYYY-MM-DD'
@@ -686,4 +699,4 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False, dev_tools_hot_reload=False)
+    app.run_server(debug=True, dev_tools_hot_reload=False)
