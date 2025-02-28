@@ -258,7 +258,7 @@ def make_fig(df_piv_rk):
             marker=dict(size=6,),
 
             line=dict(width=2),
-            name=team,
+            name=teams.nba_abbrname(team),
             opacity = 0.85,
             marker_color=teams.team_color1(team),
             hovertemplate=base_hover,
@@ -286,7 +286,7 @@ def make_fig(df_piv_rk):
             l=5,
         ),
         xaxis=dict(
-            domain=[0.1,0.85],
+            domain=[0.1,0.98],
             tickmode='array',
             tickvals=weeks_array,
             ticktext=sundays_str,
@@ -325,9 +325,9 @@ def make_fig(df_piv_rk):
             family="IBM Plex Mono"
         )),
         legend=dict(
-            x=1.08,
+            x=1,
             y=1,
-            xanchor="right",
+            xanchor="left",
             yanchor="top",
             #itemwidth=420,
             orientation='v',
