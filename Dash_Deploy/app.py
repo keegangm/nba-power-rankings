@@ -52,10 +52,18 @@ def get_nba_week_no(date=today):
     return int(nba_week_no)
 
 
+#def most_recent_sunday(date):
+#    """Find date of most recent Sunday."""
+#    date = pd.to_datetime(date)
+#    return date - pd.to_timedelta(date.weekday() + 1, unit='D')
+
 def most_recent_sunday(date):
     """Find date of most recent Sunday."""
     date = pd.to_datetime(date)
-    return date - pd.to_timedelta(date.weekday() + 1, unit='D')
+    if date.weekday() == 6:
+        return date
+    else:
+        return date - pd.to_timedelta(date.weekday() + 1, unit='D')
 
 def create_and_merge_rank_week():
 
@@ -149,6 +157,7 @@ def df_string_for_graph_2(start='2024-10-20', end=dt.datetime.today()):
   
     return rk_pt
 
+print(df_string_for_graph_2())
 
 def get_max_min_week(start='2024-10-20', end=dt.datetime.today()):
     """Get NBA WEEK # for start and end date"""
@@ -243,7 +252,7 @@ def make_fig(df_piv_rk):
         trace = go.Scatter(
             #x=list(range(0, len(df_piv_rk.columns)+ 1)),
             #x=list(range(1, len(df_piv_rk.columns)+ 1)),
-            x=list(range(1, len(df_piv_rk.columns))),
+            x=list(range(1, len(df_piv_rk.columns) +1 )),
             y=df_piv_rk.loc[team],
             mode='lines+markers',
             marker=dict(size=6,),

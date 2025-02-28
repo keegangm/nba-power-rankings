@@ -3,7 +3,7 @@
 > #### [Project Landing Page](https://github.com/keegangm/nba-power-rankings)
 
 ### Formatting
-- [ ] Add padding to body
+- [x] Add padding to body
 - [ ] Legend alignment in narrower breakpoints
 - [ ] Maintain trace focus when reframing graph (i.e. "Miami" stays as the only trace when the range slider is used)
 - [x] Maintain legend width when drilled down
