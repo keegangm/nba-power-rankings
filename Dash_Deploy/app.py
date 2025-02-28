@@ -157,7 +157,7 @@ def df_string_for_graph_2(start='2024-10-20', end=dt.datetime.today()):
   
     return rk_pt
 
-print(df_string_for_graph_2())
+#print(df_string_for_graph_2())
 
 def get_max_min_week(start='2024-10-20', end=dt.datetime.today()):
     """Get NBA WEEK # for start and end date"""
@@ -286,7 +286,7 @@ def make_fig(df_piv_rk):
             l=5,
         ),
         xaxis=dict(
-            domain=[0.1,0.98],
+            domain=[0.1,0.95],
             tickmode='array',
             tickvals=weeks_array,
             ticktext=sundays_str,
@@ -360,7 +360,7 @@ end_date = dt.datetime.today()
 start_timestamp = int(start_date.timestamp())
 end_timestamp = int(end_date.timestamp())
 
-def get_marks(start=start_timestamp, end=end_timestamp, step=7):
+def get_rangeslider_marks(start=start_timestamp, end=end_timestamp, step=7):
     """Generate timestamp marks of step."""
     marks = {}
     current = start
@@ -376,7 +376,7 @@ def get_marks_wk(start=start_date, end=end_date, step=7):
     current = start 
     while current <= end: 
         week_no = get_nba_week_no(current) 
-        marks[week_no] = current.strftime('%b. %-d')  
+        marks[week_no] = current.strftime('%b.%-d')  
         current += timedelta(days=step)  
     return marks
 

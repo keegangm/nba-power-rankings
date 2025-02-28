@@ -351,8 +351,9 @@ details[open] summary::after{
 
 #slider-div{
     max-width: 80%;
-    padding-bottom: 40px;
-    padding-top: 0px;
+    padding: 0 15px 40px 15px;
+    /*padding-bottom: 40px;
+    padding-top: 0px;*/
     margin:auto;
 }
 
