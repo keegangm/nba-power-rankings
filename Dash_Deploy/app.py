@@ -156,7 +156,7 @@ def df_string_for_graph_2(start='2024-10-20', end=dt.datetime.today()):
   
     return rk_pt
 
-#print(df_string_for_graph_2())
+print(df_string_for_graph_2())
 
 def get_max_min_week(start='2024-10-20', end=dt.datetime.today()):
     """Get NBA WEEK # for start and end date"""
@@ -231,6 +231,7 @@ def make_drilldown_options():
     return drilldown_options
 
 
+print(teams.team_color1('Cleveland'))
 
 def make_fig(df_piv_rk):
     fig = go.Figure()
@@ -564,9 +565,11 @@ app.layout = html.Div([
         id="text-attribution",
         children=[
             dcc.Markdown('''Visit [GitHub](https://github.com/keegangm/nba-power-rankings/) for more information''',link_target="_blank", id='attrib-markdown'),
-            html.P(f"Updated {clean_date()}", id='attrib-date')         
+            html.P(f"Power rankings from NBA.com, ESPN, Bleacher Report, CBS Sports, and more", id='sources'),         
+            html.P(f"Updated {clean_date()}", id='attrib-date'),         
     ]),
 ])
+
 
 def drilldown_update_layout(value):
     teams = read_nba_teams_ref()
