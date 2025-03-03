@@ -6,6 +6,8 @@
 - [x] Add padding to body
 - [x] Legend alignment in narrower breakpoints
 - [ ] Maintain trace focus when reframing graph (i.e. "Miami" stays as the only trace when the range slider is used)
+- [ ] Fewer xticks at narrow breakpoint
+- [x] Fewer rangeslider labels
 - [x] Maintain legend width when drilled down
 - [x] Maintain YTick label width even when single-digit values
 - [x] Fix attribution alignment

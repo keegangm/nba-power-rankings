@@ -44,13 +44,12 @@ us_central_tz = pytz.timezone('US/Central')
 today = dt.datetime.now(us_central_tz).date()
 #print(today)
 
-def get_nba_week_no(date=today):
+def nba_week_from_date(date=today):
     """Get NBA Week number"""
-    wk = read_nba_week()
-    nba_week_no = wk[wk['sunday'] <= date].nba_week.max()
+    wk_df = read_nba_week()
+    nba_week_no = wk_df[wk_df['sunday'] <= date].nba_week.max()
 
     return int(nba_week_no)
-
 
 #def most_recent_sunday(date):
 #    """Find date of most recent Sunday."""
@@ -162,9 +161,9 @@ def df_string_for_graph_2(start='2024-10-20', end=dt.datetime.today()):
 def get_max_min_week(start='2024-10-20', end=dt.datetime.today()):
     """Get NBA WEEK # for start and end date"""
 
-    return get_nba_week_no(end), get_nba_week_no(start) 
+    return nba_week_from_date(end), nba_week_from_date(start) 
 
-def sunday_lookup(week: int):
+def sunday_from_nba_week(week: int):
     """Lookup date for Sunday of week number."""
     try:
         wk = read_nba_week()
@@ -172,24 +171,24 @@ def sunday_lookup(week: int):
     except:
         return None
         
-def change_slider_marks(step):
-    """Custom slider marks"""
-    marks = {}
+#def change_slider_marks(step):
+#    """Custom slider marks"""
+#    marks = {}
 
-    start_date = dt.datetime(2024, 10, 20)
-    end_date = dt.datetime(2025, 2, 24)
+#    start_date = dt.datetime(2024, 10, 20)
+#    end_date = dt.datetime(2025, 2, 24)
 
-    # convert to timestamp
-    end_timestamp = int(end_date.timestamp())
-    start_timestamp = int(start_date.timestamp())
+#    # convert to timestamp
+#    end_timestamp = int(end_date.timestamp())
+#    start_timestamp = int(start_date.timestamp())
 
-    points = start_timestamp
+#    points = start_timestamp
 
-    while points <= end_timestamp:
-        date_str = dt.datetime.fromtimestamp(points)
-        marks[int(points)] = date_str
-        points += step * 24 * 3600
-    return marks
+#    while points <= end_timestamp:
+#        date_str = dt.datetime.fromtimestamp(points)
+#        marks[int(points)] = date_str
+#        points += step * 24 * 3600,
+#    return marks
 
 def create_sundays_array():
     """Create arrays of Sundays and corresponding NBA week #s."""
@@ -198,7 +197,7 @@ def create_sundays_array():
     for i in range(-5, 30):
         weeks_array.append(i)
         #sundays_array.append(sunday_lookup(i)+1)
-        sundays_array.append(sunday_lookup(i))
+        sundays_array.append(sunday_from_nba_week(i))
 
     return weeks_array, sundays_array
 
@@ -287,6 +286,7 @@ def make_fig(df_piv_rk):
         ),
         xaxis=dict(
             domain=[0.1,0.95],
+            range=[start_date, end_date],
             tickmode='array',
             tickvals=weeks_array,
             ticktext=sundays_str,
@@ -294,6 +294,7 @@ def make_fig(df_piv_rk):
                 text="<b>Date</b>",
                 font_size=18,
             ),
+            
             
             tickfont=dict(
                 size=12  
@@ -354,31 +355,75 @@ def make_fig(df_piv_rk):
 
 # Define date range
 start_date = dt.datetime(2024, 10, 20)
-end_date = dt.datetime.today()
+#end_date = dt.datetime.today()
+end_date = sunday_from_nba_week(df_string_for_graph_2().columns.max())
 
 # Convert to integer timestamps
 start_timestamp = int(start_date.timestamp())
 end_timestamp = int(end_date.timestamp())
 
-def get_rangeslider_marks(start=start_timestamp, end=end_timestamp, step=7):
-    """Generate timestamp marks of step."""
+#def get_rangeslider_marks(start=start_timestamp, end=end_timestamp, step=7):
+#    """Generate timestamp marks of step."""
+#    marks = {}
+#    current = start
+#    while current <= end:
+#        date_str = dt.datetime.fromtimestamp(current).strftime('%b. %-d')
+#        marks[int(current)] = date_str  
+#        current += step * 24 * 3600 
+#    return marks
+def get_datemarks_from_wk(start=start_date, end=end_date, step=7):
+    """Generate date marks with start, end, and up to 2 evenly spaced intermediates."""
     marks = {}
-    current = start
-    while current <= end:
-        date_str = dt.datetime.fromtimestamp(current).strftime('%b. %-d')
-        marks[int(current)] = date_str  
-        current += step * 24 * 3600 
-    return marks
 
-def get_marks_wk(start=start_date, end=end_date, step=7):
-    """Generate date marks of step."""
-    marks = {}
-    current = start 
-    while current <= end: 
-        week_no = get_nba_week_no(current) 
-        marks[week_no] = current.strftime('%b.%-d')  
-        current += timedelta(days=step)  
-    return marks
+    start_week = nba_week_from_date(start)
+    end_week = nba_week_from_date(end)
+
+    # Always include the first and last weeks
+    marks[start_week] = start.strftime('%b. %-d')
+    marks[end_week] = end.strftime('%b. %-d')
+
+    total_weeks = end_week - start_week
+
+    if total_weeks >= 4:  # Only show intermediates if enough space
+        mid1_week = start_week + total_weeks // 3
+        mid2_week = start_week + 2 * (total_weeks // 3)
+
+        # Ensure the intermediates aren't duplicates of start or end
+        if mid1_week != start_week and mid1_week != end_week:
+            mid1_date = start + timedelta(weeks=(mid1_week - start_week))
+            marks[mid1_week] = mid1_date.strftime('%b. %-d')
+
+        if mid2_week != start_week and mid2_week != end_week:
+            mid2_date = start + timedelta(weeks=(mid2_week - start_week))
+            marks[mid2_week] = mid2_date.strftime('%b. %-d')
+
+    # Ensure marks are ordered by week number
+    return dict(sorted(marks.items()))
+
+#def get_datemarks_from_wk(start=start_date, end=end_date, step=7):
+#    """Generate date marks of step."""
+#    marks = {}
+
+#    start_week = get_nba_week_no(start)
+#    end_week = get_nba_week_no(end)
+
+#    marks[start_week] = start.strftime('%b. %-d')
+#    marks[end_week] = start.strftime('%b. %-d')
+
+#    total_weeks = end_week - start_week
+
+#    if total_weeks >= 4:  # Only if there's enough space
+#        mid1_week = start_week + (total_weeks // 3)
+#        mid2_week = start_week + 2 * (total_weeks // 3)
+
+#        mid1_date = start + timedelta(weeks=(mid1_week - start_week))
+#        mid2_date = start + timedelta(weeks=(mid2_week - start_week))
+
+#        marks[mid1_week] = mid1_date.strftime('%b. %-d')
+#        marks[mid2_week] = mid2_date.strftime('%b. %-d')
+
+#    # Sort marks by week number (important for Dash sliders)
+#    return dict(sorted(marks.items()))
 
 
 ##### APP #####
@@ -406,12 +451,16 @@ app.layout = html.Div([
         html.Div([
             html.Div([
                 dcc.RangeSlider(
-                    min=get_nba_week_no(start_date), 
-                    max=get_nba_week_no(end_date),
+                    min=nba_week_from_date(start_date), 
+                    max=nba_week_from_date(end_date),
                     step= 1, 
-                    value=[get_nba_week_no(start_date), get_nba_week_no(end_date)], 
+                    value=[nba_week_from_date(start_date), nba_week_from_date(end_date)], 
                     #marks=marks,
-                    marks =  get_marks_wk(start_date,end_date, step=14),
+                    marks =  get_datemarks_from_wk(start_date,end_date, step=28),
+                    tooltip= {
+                        'placement': 'bottom', 
+                        'always_visible': False,
+                        'transform':'getSundayByNBAWeek'},
                     id='date-range-slider-wk',
                 ),
             ],
@@ -705,6 +754,8 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
             fig.add_hrect(**rect)
 
     return fig
+
+
 
 
 if __name__ == '__main__':
