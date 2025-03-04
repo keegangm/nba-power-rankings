@@ -11,7 +11,6 @@
 ### `feature`
 - [ ] Add team records / strength of schedule
 - [ ] Add event annotations
-- [ ] Filter by source
 - [ ] Individual team profiles
 
 ### `experiment`
