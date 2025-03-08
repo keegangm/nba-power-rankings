@@ -109,7 +109,7 @@ h3{
     /*background-color: green;*/
     background-color: var(--whitebg);
     /*padding: 20px 15px;*/
-    border-radius: var(--bordrad);
+    border-radius: var(--bordrad) 0 var(--bordrad) var(--bordrad);
     padding: 6px;
     /*margin: -5px;*/
     /*margin-top: 15px;*/
@@ -395,4 +395,26 @@ details[open] summary::after{
     transform: translateX(50%) !important ;
     right: 0% !important;
     left: auto !important;
+}
+
+/* Search Tab */
+#team-dropdown-div{
+    display: flex;
+    min-width: 200px;
+    justify-content: flex-end;
+ 
+    align-items: right;
+    
+}
+
+#team-dropdown-group{
+    flex-shrink: 0;
+    min-width: 300px;
+    background-color: var(--whitebg);
+    padding: 15px;
+    margin-bottom: 0px;
+    border-radius: var(--bordrad) var(--bordrad) 0 0;
+    /*height: 80px;*/
+    /*display:inline-block;*/
+    /*margin-right: 0;*/
 }

@@ -441,6 +441,26 @@ app.layout = html.Div([
         ],id='header-div'
     ),
     html.Div([
+        html.Div(
+            [
+                #html.H5('Select Conference/Division', className="button-label"),
+                html.Div([
+                    dcc.Dropdown(
+                        make_drilldown_options(),
+                        id='team-dropdown',
+                        className="check-label",
+                        value=["All Teams"],
+                        clearable=False,
+                        multi=True,
+                    ), 
+                ],id='team-dropdown-select-div'
+                )
+            ]
+        ,id="team-dropdown-group", 
+        className="button-grp"
+        ),
+    ],id="team-dropdown-div"),
+    html.Div([ 
         html.Div([
             dcc.Graph(
                     figure=make_fig(df_string_for_graph_2()), 
@@ -451,22 +471,7 @@ app.layout = html.Div([
             ),
         html.Div([
             html.Div([
-                #dcc.RangeSlider(
-                #    min=nba_week_from_date(start_date), 
-                #    max=nba_week_from_date(end_date),
-                #    #step= 1, 
-                #    value=[nba_week_from_date(start_date), nba_week_from_date(end_date)], 
-                #    #marks=marks,
-                #    marks =  get_datemarks_from_wk(start=start_date,end=end_date, step=28),
-                #    tooltip= {
-                #        'always_visible': False,
-                #        'placement': 'top', 
-
-                #        'transform':'getSundayByNBAWeek'},
-                #    id='date-range-slider-wk',
-                #),
                 dcc.RangeSlider(
-                    #id="date-range-slider",
                     step=1,
                     id='date-range-slider-wk',
                     min=nba_week_from_date(start_date),
@@ -550,23 +555,6 @@ app.layout = html.Div([
                             ,id="show-dots", 
                             className="button-grp"
                             ),
-                            html.Div(
-                                [
-                                    html.H5('Select Conference/Division', className="button-label"),
-                                    html.Div([
-                                        dcc.Dropdown(
-                                            make_drilldown_options(),
-                                            id='team-dropdown',
-                                            className="check-label",
-                                            value="All Teams",
-                                            clearable=False
-                                        ), 
-                                    ],id='team-dropdown-div'
-                                    )
-                                ]
-                            ,id="team-dropdown-group", 
-                            className="button-grp"
-                            ),
                             ]
                     ,id="button_groups"
                     ),],
@@ -582,7 +570,7 @@ app.layout = html.Div([
 ])
 
 
-def drilldown_update_layout(value):
+def dropdown_update_layout(value):
     teams = read_nba_teams_ref()
     
     # List to hold visibility settings for each trace
@@ -718,6 +706,15 @@ def set_xticks(value):
 
 def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_dropdown, dot_check):
 
+    # team debug
+    print(team_dropdown)
+
+    if isinstance(team_dropdown, list):
+        selected_teams = team_dropdown
+        print(f"Selected teams are: {selected_teams}")
+
+    # team debug end
+
     df = df_string_for_graph_2()
 
     fig = make_fig(df)
@@ -761,7 +758,8 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
         trace.hovertemplate += additional_hover + '<extra></extra>'
     #fig.update_traces(hovertemplate = trace.hovertemplate + set_hovertemplate_format(week_day_check))
     
-    for trace, vis_update in zip(fig.data, drilldown_update_layout(team_dropdown)):
+    # Team Dropdown
+    for trace, vis_update in zip(fig.data, dropdown_update_layout(team_dropdown)):
         trace.visible = vis_update["visible"]
 
     rectangles = zone_check_rect(zone_check)
@@ -774,7 +772,5 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
     return fig
 
 
-
-
 if __name__ == '__main__':
-    app.run_server(debug=True, dev_tools_hot_reload=False)
+    app.run_server(port=8020, debug=True, dev_tools_hot_reload=False)
