@@ -512,23 +512,6 @@ app.layout = html.Div([
                             ,id="show-dots", 
                             className="button-grp"
                             ),
-                            html.Div(
-                                [
-                                    html.H5('Select Conference/Division', className="button-label"),
-                                    html.Div([
-                                        dcc.Dropdown(
-                                            make_drilldown_options(),
-                                            id='team-dropdown',
-                                            className="check-label",
-                                            value="All Teams",
-                                            clearable=False
-                                        ), 
-                                    ],id='team-dropdown-div'
-                                    )
-                                ]
-                            ,id="team-dropdown-group", 
-                            className="button-grp"
-                            ),
                             ]
                     ,id="button_groups"
                     ),],
@@ -543,7 +526,7 @@ app.layout = html.Div([
 ])
 
 
-def drilldown_update_layout(value):
+def dropdown_update_layout(value):
     teams = read_nba_teams_ref()
     
     # List to hold visibility settings for each trace
@@ -674,18 +657,20 @@ def set_xticks(value):
     Input('zone-check', 'value'),
     Input('week-day-check', 'value'),
     Input('team-dropdown', 'value'),
-    Input('dot-check', 'value'),
-    Input('trace-visibility-store', 'data'),
-    Input('pr-graph', 'restyleData'),
-    #State('pr-graph', 'restyleData'),
-    #State('pr-graph', 'relayoutData')
-    State('pr-graph', 'figure')
+    Input('dot-check','value'),
+
 )
 
+def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_dropdown, dot_check):
 
-def update_graph(
-    date_range_slider, rank_radio, zone_check, week_day_check, team_dropdown, dot_check, visibility_state, restyle_data, current_figure
-    ): #, relayout_data):
+    # team debug
+    print(team_dropdown)
+
+    if isinstance(team_dropdown, list):
+        selected_teams = team_dropdown
+        print(f"Selected teams are: {selected_teams}")
+
+    # team debug end
 
     # Step 1: Create df
     df = df_string_for_graph_2()
@@ -744,7 +729,11 @@ def update_graph(
     for trace in fig.data:
         additional_hover = set_hovertemplate_format(week_day_check)
         trace.hovertemplate += additional_hover + '<extra></extra>'
-
+    #fig.update_traces(hovertemplate = trace.hovertemplate + set_hovertemplate_format(week_day_check))
+    
+    # Team Dropdown
+    for trace, vis_update in zip(fig.data, dropdown_update_layout(team_dropdown)):
+        trace.visible = vis_update["visible"]
 
     # Step 6: Add or remove vrect based on zone_check
     rectangles = zone_check_rect(zone_check)
@@ -756,13 +745,8 @@ def update_graph(
     for trace, vis_update in zip(fig.data, drilldown_update_layout(team_dropdown)):
         trace.visible = vis_update["visible"]
 
-    for i, trace in enumerate(fig.data):
-        if i < len(visibility_state):
-            trace.visible = visibility_state[i]
 
-    # Return
-    return fig, visibility_state
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, dev_tools_hot_reload=False)
+    app.run_server(port=8020, debug=True, dev_tools_hot_reload=False)
