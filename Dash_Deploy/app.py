@@ -451,19 +451,30 @@ app.layout = html.Div([
             ),
         html.Div([
             html.Div([
+                #dcc.RangeSlider(
+                #    min=nba_week_from_date(start_date), 
+                #    max=nba_week_from_date(end_date),
+                #    #step= 1, 
+                #    value=[nba_week_from_date(start_date), nba_week_from_date(end_date)], 
+                #    #marks=marks,
+                #    marks =  get_datemarks_from_wk(start=start_date,end=end_date, step=28),
+                #    tooltip= {
+                #        'always_visible': False,
+                #        'placement': 'top', 
+
+                #        'transform':'getSundayByNBAWeek'},
+                #    id='date-range-slider-wk',
+                #),
                 dcc.RangeSlider(
-                    min=nba_week_from_date(start_date), 
-                    max=nba_week_from_date(end_date),
-                    step= 1, 
-                    value=[nba_week_from_date(start_date), nba_week_from_date(end_date)], 
-                    #marks=marks,
-                    marks =  get_datemarks_from_wk(start_date,end_date, step=28),
-                    tooltip= {
-                        'placement': 'bottom', 
-                        'always_visible': False,
-                        'transform':'getSundayByNBAWeek'},
+                    #id="date-range-slider",
+                    step=1,
                     id='date-range-slider-wk',
+                    min=nba_week_from_date(start_date),
+                    max=nba_week_from_date(end_date),
+                    marks=get_datemarks_from_wk(start=start_date, end=end_date),
+                    tooltip={"always_visible": True, "placement": "bottom",'transform':'getSundayByNBAWeek'},
                 ),
+
             ],
             id="slider-div",
             ),
@@ -493,6 +504,22 @@ app.layout = html.Div([
                             ],id="rank-range", className="button-grp"),
                             html.Div(
                                 [
+                                    html.H5('Highlighting', className="button-label"),
+                                    html.Div([
+                                        dcc.Checklist(
+                                            id='zone-check',
+                                            className="check-label",
+                                            options=[{'label': 'Top & Bottom 5', 'value': 'linear'}],
+                                            value=['zone']
+                                        ), 
+                                    ],
+                                    )
+                                ]
+                            ,id="zone-highlights", 
+                            className="button-grp"
+                            ),
+                            html.Div(
+                                [
                                     html.H5('Update XTicks Labels', className="button-label"),
                                     html.Div([
                                         dcc.Checklist(
@@ -509,7 +536,7 @@ app.layout = html.Div([
                             ),
                             html.Div(
                                 [
-                                    html.H5('Mark Points', className="button-label"),
+                                    html.H5('Show Point Markers', className="button-label"),
                                     html.Div([
                                         dcc.Checklist(
                                             id='dot-check',
@@ -521,22 +548,6 @@ app.layout = html.Div([
                                     )
                                 ]
                             ,id="show-dots", 
-                            className="button-grp"
-                            ),
-                            html.Div(
-                                [
-                                    html.H5('Highlighting', className="button-label"),
-                                    html.Div([
-                                        dcc.Checklist(
-                                            id='zone-check',
-                                            className="check-label",
-                                            options=[{'label': 'Top & Bottom 5', 'value': 'linear'}],
-                                            value=['zone']
-                                        ), 
-                                    ],
-                                    )
-                                ]
-                            ,id="zone-highlights", 
                             className="button-grp"
                             ),
                             html.Div(
@@ -718,7 +729,11 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
     chart_tickvals=chart_settings[2]
     title_standoff=chart_settings[3]
 
+    if date_range_slider is None:
+        date_range_slider = [nba_week_from_date(dt.datetime(2024,10,20)), nba_week_from_date(sunday_from_nba_week(df_string_for_graph_2().columns.max()))]
+                             
     start_date = date_range_slider[0]
+    #print(date_range_slider)
     end_date = date_range_slider[1]
     fig.update_layout(
         yaxis=dict(
