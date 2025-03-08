@@ -706,34 +706,46 @@ def set_xticks(value):
     return xticks_set
 
 @app.callback(
-    Output('pr-graph','figure'),
+    Output('pr-graph', 'figure'),
     Input('date-range-slider-wk', 'value'),
     Input('rank-radio', 'value'),
     Input('zone-check', 'value'),
     Input('week-day-check', 'value'),
     Input('team-dropdown', 'value'),
-    Input('dot-check','value'),
-
+    Input('dot-check', 'value'),
+    State('pr-graph', 'restyleData'),
+    State('pr-graph', 'relayoutData')
 )
+def update_graph(date_range_slider, rank_radio, zone_check, week_day_check, team_dropdown, dot_check, restyle_data, relayout_data):
+    # Debug: Print restyle_data to inspect its structure
+    print("restyle_data:", restyle_data)
 
-def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_dropdown, dot_check):
+    # Step 1: Extract visibility states and trace indices from restyle_data
+    visibility_states = None
+    trace_indices = None
+    if restyle_data:
+        # restyle_data is a list where:
+        # - The first item is a dict with the 'visible' property
+        # - The second item is a list of trace indices
+        if len(restyle_data) >= 2 and isinstance(restyle_data[0], dict) and 'visible' in restyle_data[0]:
+            visibility_states = restyle_data[0]['visible']
+            trace_indices = restyle_data[1]
 
+    # Step 2: Create the figure
     df = df_string_for_graph_2()
-
     fig = make_fig(df)
 
- 
+    # Step 3: Apply chart settings (e.g., y-range, x-ticks, etc.)
     chart_settings = set_chart_yrange(rank_radio)
     chart_yrange = chart_settings[0]
     chart_dtick = chart_settings[1]
-    chart_tickvals=chart_settings[2]
-    title_standoff=chart_settings[3]
+    chart_tickvals = chart_settings[2]
+    title_standoff = chart_settings[3]
 
     if date_range_slider is None:
-        date_range_slider = [nba_week_from_date(dt.datetime(2024,10,20)), nba_week_from_date(sunday_from_nba_week(df_string_for_graph_2().columns.max()))]
-                             
+        date_range_slider = [nba_week_from_date(dt.datetime(2024, 10, 20)), nba_week_from_date(sunday_from_nba_week(df_string_for_graph_2().columns.max()))]
+
     start_date = date_range_slider[0]
-    #print(date_range_slider)
     end_date = date_range_slider[1]
     fig.update_layout(
         yaxis=dict(
@@ -742,34 +754,51 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
             tickvals=chart_tickvals,
             title_standoff=title_standoff
         ),
-        xaxis= dict(
-            set_xticks(week_day_check),
+        xaxis=dict(
+            **set_xticks(week_day_check),  # Apply x-ticks settings
             range=[start_date, end_date]
-            
         )
     )
-    #print(dot_check)
+
+    # Step 4: Toggle point markers based on dot-check
     if dot_check == ['show']:
-        linemode='lines+markers'
-        fig.update_traces(mode = linemode, marker=dict(size=6,))
+        linemode = 'lines+markers'
+        fig.update_traces(mode=linemode, marker=dict(size=6))
     else:
         linemode = 'lines'
-        fig.update_traces(mode = linemode)
-    
+        fig.update_traces(mode=linemode)
+
+    # Step 5: Update hover template
     for trace in fig.data:
         additional_hover = set_hovertemplate_format(week_day_check)
         trace.hovertemplate += additional_hover + '<extra></extra>'
-    #fig.update_traces(hovertemplate = trace.hovertemplate + set_hovertemplate_format(week_day_check))
-    
-    for trace, vis_update in zip(fig.data, drilldown_update_layout(team_dropdown)):
-        trace.visible = vis_update["visible"]
 
+    # Step 6: Reapply visibility states from restyle_data (legend toggles)
+    if visibility_states and trace_indices:
+        if len(visibility_states) == 1 and len(trace_indices) == 1:
+            # Case 1: Single trace update (e.g., from range slider)
+            idx = trace_indices[0]
+            if idx < len(fig.data):  # Ensure the index is valid
+                fig.data[idx].visible = visibility_states[0]
+        else:
+            # Case 2: Multiple trace updates (e.g., from bottom filter)
+            for vis, idx in zip(visibility_states, trace_indices):
+                if idx < len(fig.data):  # Ensure the index is valid
+                    fig.data[idx].visible = vis
+
+    # Step 7: Apply relayout_data to preserve zoom/pan state
+    if relayout_data:
+        fig.update_layout(**relayout_data)
+
+    # Step 8: Add or remove vrect based on zone_check
     rectangles = zone_check_rect(zone_check)
-
     if zone_check:
-        
         for rect in rectangles:
             fig.add_hrect(**rect)
+
+    # Step 9: Apply team dropdown filtering
+    for trace, vis_update in zip(fig.data, drilldown_update_layout(team_dropdown)):
+        trace.visible = vis_update["visible"]
 
     return fig
 
