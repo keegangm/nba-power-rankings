@@ -564,7 +564,7 @@ app.layout = html.Div([
     html.Div(
         id="text-attribution",
         children=[
-            dcc.Markdown('''Visit [GitHub](https://github.com/keegangm/nba-power-rankings/) for more information''',link_target="_blank", id='attrib-markdown'),
+            dcc.Markdown('''Visit [github.com/keegangm](https://github.com/keegangm/nba-power-rankings/) for more information''',link_target="_blank", id='attrib-markdown'),
             html.P(f"Power rankings from NBA.com, ESPN, Bleacher Report, CBS Sports, and more", id='sources'),         
             html.P(f"Updated {clean_date()}", id='attrib-date'),         
     ]),
