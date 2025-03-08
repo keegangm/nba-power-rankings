@@ -231,7 +231,8 @@ def make_dropdown_options():
 
     return dropdown_options"""
 
-    dropdown_options = ["All Teams"]
+    dropdown_options = []
+    #dropdown_options = ["All Teams"]
     conf_set = set()
     team_set = set()
     div_set = set()
@@ -470,13 +471,21 @@ app.layout = html.Div([
             [
                 #html.H5('Select Conference/Division', className="button-label"),
                 html.Div([
+                    dcc.Checklist(
+                        id="all-teams-checkbox",
+                        options=[{'label': 'All Teams', 'value': 'all'}],
+                        value=['all'],
+
+                    ),
+                    dcc.Store(id='previous-all-teams-checkbox', data=[]),
                     dcc.Dropdown(
                         make_dropdown_options(),
                         id='team-dropdown',
                         className="check-label",
-                        value=["All Teams"],
-                        clearable=False,
+                        value=[],
+                        #clearable=False,
                         multi=True,
+                        #disabled=True,
                     ), 
                 ],id='team-dropdown-select-div'
                 )
@@ -766,32 +775,81 @@ def date_range_slider_set(slider):
 
 @app.callback(
     Output('pr-graph','figure'),
+    Output('team-dropdown', 'value'),
+    Output('all-teams-checkbox', 'value'),
+    Output('previous-all-teams-checkbox', 'data'),  # Track checkbox state
+    #Output('team-dropdown', 'disabled'),
     Input('date-range-slider-wk', 'value'),
     Input('rank-radio', 'value'),
     Input('zone-check', 'value'),
     Input('week-day-check', 'value'),
     Input('team-dropdown', 'value'),
     Input('dot-check','value'),
+    Input('all-teams-checkbox','value'),
+    State('previous-all-teams-checkbox','data'),
+    #State('team-dropdown', 'options')
 
 )
 
-def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_dropdown, dot_check):
+def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_dropdown, dot_check, all_teams_checkbox, previous_check):
     df = df_string_for_graph_2()
+
+    # Debugging printouts
+    print(f"Checkbox current state: {all_teams_checkbox}")
+    print(f"Previous checkbox state: {previous_check}")
+    print(f"Dropdown value: {team_dropdown}")
+
+    # Ensure non-None values
+    all_teams_checkbox = all_teams_checkbox or []
+    previous_check = previous_check or []
 
     chart_settings = set_chart_yrange(rank_radio)
     chart_yrange = chart_settings[0]
     chart_dtick = chart_settings[1]
     chart_tickvals=chart_settings[2]
-    title_standoff=chart_settings[3]
+    #title_standoff=chart_settings[3]
 
     filtered_df = df_string_for_graph_subset(team_dropdown)
     weeks_array, sundays_array = create_sundays_array()
     sundays_str = [date.strftime('%b. %d') for date in sundays_array]
 
+    print(previous_check)
 
     fig = go.Figure()
 
+    #other_options = [option for option in dropdown_options if option.lower() != "all teams"]
+    #print(other_options)
 
+
+
+    # IF checkbox is selected AND THEN options selected/updated from dropdown, CHECKBOX DESELECTED
+    # IF options selected from dropdown AND THEN checkbox selected, KEEP ITEMS IN DROPDOWN but SELECT VIA Checkbox (all)
+    # CHECKBOX SELECTED BY DEFAULT
+
+    if "all" in all_teams_checkbox and not team_dropdown:
+        team_vals = ['All Teams']
+        all_teams_checkbox_out=['all']
+        #dropdown_disabled = True,
+        filtered_df = df_string_for_graph_2()
+    elif "all" in all_teams_checkbox and team_dropdown:
+        team_vals = team_dropdown
+        all_teams_checkbox_out =[]
+        #dropdown_disabled = False,
+        filtered_df = df_string_for_graph_subset(team_vals)
+    
+    ##elif "all" in all_teams_checkbox and "all" not in previous_all_teams_checkbox:
+    #    team_vals = ['All Teams']
+    #    all_teams_checkbox_out=['all']
+    #    #dropdown_disabled = True,
+    #    filtered_df = df_string_for_graph_2()
+
+    else:
+        team_vals = team_dropdown
+        all_teams_checkbox_out =[]
+        #dropdown_disabled = False,
+        filtered_df = df_string_for_graph_subset(team_vals)
+
+    
     for team in filtered_df.index:
         base_hover = f"<b>{team.upper()}</b>"
 
@@ -952,8 +1010,25 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
         
         for rect in rectangles:
             fig.add_hrect(**rect)
-    return fig
 
+    #return fig, team_vals, all_teams_checkbox_out, all_teams_checkbox
+    return fig, all_teams_checkbox
+
+#@app.callback(
+#    Output('team-dropdown', 'disabled'),
+#    Output('team-dropdown', 'value'),
+#    Input('all-teams-checkbox', 'value'),
+#)
+#def update_dropdown_state(checkbox_value):
+#    """
+#    Enable/disable the dropdown and clear its value based on the checkbox.
+#    """
+#    if 'all' in checkbox_value:
+#        # If "All Teams" is selected, disable the dropdown and clear its value
+#        return True, []
+#    else:
+#        # If "All Teams" is deselected, enable the dropdown
+#        return False, []
 
 if __name__ == '__main__':
     app.run_server(port=8020, debug=True, dev_tools_hot_reload=False)
