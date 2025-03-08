@@ -202,9 +202,10 @@ def create_sundays_array():
     return weeks_array, sundays_array
 
 
-def make_drilldown_options():
+def make_dropdown_options():
     teams = read_nba_teams_ref()
-    drilldown_options = [
+    """
+    dropdown_options = [
         "All Teams"
         ]
 
@@ -221,19 +222,43 @@ def make_drilldown_options():
         div_set.add(div)
 
     for element in conf_set:
-        drilldown_options.append(element)
+        dropdown_options.append(element)
         conf_buttons.append(element)
 
     for element in div_set:
-        drilldown_options.append(element)
+        dropdown_options.append(element)
         div_buttons.append(element)
 
-    return drilldown_options
+    return dropdown_options"""
+
+    dropdown_options = ["All Teams"]
+    conf_set = set()
+    team_set = set()
+    div_set = set()
+
+    for index, row in teams.iterrows():
+        team = row['teamname']
+        conf = row['conference']
+        div = row['division']
+        team_set.add(team)
+        conf_set.add(conf)
+        div_set.add(div)
+
+    for element in conf_set:
+        dropdown_options.append(element)
+
+    for element in div_set:
+        dropdown_options.append(element)
+
+    for element in team_set:
+        dropdown_options.append(element)
+
+    return dropdown_options
 
 
 #print(teams.team_color1('Cleveland'))
 
-def make_fig(df_piv_rk):
+"""def make_fig(df_piv_rk):
     fig = go.Figure()
 
     # specifying tick values so 1, not 0, is shown
@@ -353,7 +378,7 @@ def make_fig(df_piv_rk):
         ),
     )
     return fig
-
+"""
 # Define date range
 start_date = dt.datetime(2024, 10, 20)
 #end_date = dt.datetime.today()
@@ -417,8 +442,28 @@ app.layout = html.Div([
         ],id='header-div'
     ),
     html.Div([
+        html.Div(
+            [
+                #html.H5('Select Conference/Division', className="button-label"),
+                html.Div([
+                    dcc.Dropdown(
+                        make_dropdown_options(),
+                        id='team-dropdown',
+                        className="check-label",
+                        value=["All Teams"],
+                        clearable=False,
+                        multi=True,
+                    ), 
+                ],id='team-dropdown-select-div'
+                )
+            ]
+        ,id="team-dropdown-group", 
+        className="button-grp"
+        ),
+    ],id="team-dropdown-div"),
+    html.Div([ 
         html.Div([
-            dcc.Graph( 
+            dcc.Graph(
                     #figure=make_fig(df_string_for_graph_2()), 
                     id="pr-graph",
             ),
@@ -649,6 +694,52 @@ def set_xticks(value):
         )
     return xticks_set
 
+def df_string_for_graph_subset(team_input):
+    applicable_teams = set()
+    df = df_string_for_graph_2()
+
+    # Check if "All Teams" is selected (case-insensitive)
+    if any(i.lower() == 'all teams' for i in team_input):
+        return df  # Return the entire DataFrame
+
+    for i in team_input:
+        team = teams.find_team(i)
+        if team:
+            applicable_teams.add(team)
+        # Handle conferences
+        elif i in ['East', 'West']:
+            applicable_teams.update(t for t in df.index if teams.nba_conf(t) == i)
+        # Handle divisions
+        elif i in ['Southwest', 'Southeast', 'Atlantic', 'Pacific', 'Northwest', 'Central']:
+            applicable_teams.update(t for t in df.index if teams.nba_div(t) == i)
+
+    # Filter the DataFrame to include only rows where the index (teamname) is in applicable_teams
+    filtered_df = df[df.index.isin(applicable_teams)]
+    return filtered_df
+
+def date_range_slider_set(slider):
+    #print(slider==None)
+    if slider is None:
+        start_date = 1, 
+        end_date = nba_week_from_date(sunday_from_nba_week(df_string_for_graph_2().columns.max()))
+        #print(end_date)
+    else:
+        # Ensure slider is a tuple or list with two elements
+        if isinstance(slider, (tuple, list)) and len(slider) == 2:
+            start_date, end_date = slider
+        else:
+            # Fallback to default values if slider is invalid
+            start_date = 1
+            end_date = nba_week_from_date(sunday_from_nba_week(df_string_for_graph_2().columns.max()))
+
+    return start_date, end_date
+
+
+#print(date_range_slider_set())
+
+#print(start_date, end_date)
+
+
 @app.callback(
     Output('pr-graph', 'figure'),
     Output('trace-visibility-store', 'data'),
@@ -674,73 +765,180 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
 
     # Step 1: Create df
     df = df_string_for_graph_2()
-    fig = make_fig(df)
-    #print(df)
 
-    if visibility_state is None:
-        visibility_state = [True] * len(df.index)
-
-    # Step 2: Set visibility states and trace indices from restyle_data
-    if restyle_data:
-
-        if len(restyle_data) >= 2 and isinstance(restyle_data[0], dict) and 'visible' in restyle_data[0]:
-            
-            visibility_states = restyle_data[0]['visible']
-            trace_indices = restyle_data[1]
-            
-            for i, trace_idx in enumerate(trace_indices):
-                if trace_idx < len(visibility_state):
-                    visibility_state[trace_idx] = visibility_states[i]
-
-    # Step 3: Apply chart settings (e.g., y-range, x-ticks, etc.)
     chart_settings = set_chart_yrange(rank_radio)
     chart_yrange = chart_settings[0]
     chart_dtick = chart_settings[1]
     chart_tickvals = chart_settings[2]
     title_standoff = chart_settings[3]
 
-    if date_range_slider is None:
-        date_range_slider = [nba_week_from_date(dt.datetime(2024, 10, 20)), nba_week_from_date(sunday_from_nba_week(df_string_for_graph_2().columns.max()))]
+    filtered_df = df_string_for_graph_subset(team_dropdown)
+    weeks_array, sundays_array = create_sundays_array()
+    sundays_str = [date.strftime('%b. %d') for date in sundays_array]
 
-    start_date = date_range_slider[0]
-    end_date = date_range_slider[1]
+
+    fig = go.Figure()
+
+
+    for team in filtered_df.index:
+        base_hover = f"<b>{team.upper()}</b>"
+
+        fig.add_trace(
+            go.Scatter(
+                x=filtered_df.columns,  # Weeks
+                y=filtered_df.loc[team],  # Rankings
+                mode='lines+markers',
+                #name=team,  # Team name as the trace name
+                #marker=dict(size=10),
+                line=dict(width=2),
+                #mode='lines+markers',
+                marker=dict(size=6,),
+
+                #line=dict(width=2),
+                name=teams.nba_abbrname(team),
+                opacity = 0.85,
+                marker_color=teams.team_color1(team),
+                hovertemplate=base_hover,
+        
+                visible=True,
+                showlegend=True,
+        ))
+
+    #print(date_range_slider_set(date_range_slider))
+
+    start_week, end_week = date_range_slider_set(date_range_slider)
+    # Update layout for better visualization
     fig.update_layout(
+        autosize=True,
+        height=620,
+        #title="NBA Team Rankings Over Time",
+        xaxis_title="Week",
+        yaxis_title="Ranking",
+        legend_title="Teams",
+        #template="plotly_white",
+        paper_bgcolor='#f9f9f9',
+        plot_bgcolor= 'white',
+        template="presentation",
+        font_family="IBM Plex Mono",
+        margin=dict(
+            t=55,
+            l=5,
+        ),
+        xaxis=dict(
+            domain=[0.1,0.95],
+            range=[start_week, end_week],
+            autorange=False,
+            #range=date_range_slider_set(date_range_slider),
+            tickmode='array',
+            tickvals=weeks_array,
+            ticktext=sundays_str,
+            title=dict(
+                text="<b>Date</b>",
+                font_size=18,
+            ),
+            
+            
+            tickfont=dict(
+                size=12  
+            ),
+            tickangle=70,
+            showline=True,
+            linecolor='black',
+            #linewidth=2,
+        ),
+        
         yaxis=dict(
             range=chart_yrange,
             dtick=chart_dtick,
             tickvals=chart_tickvals,
-            title_standoff=title_standoff
+            #title_standoff=title_standoff
+            title=dict(
+                text="<b>Mean Ranking</b>",
+                font_size=18,
+            ),
+            tickfont=dict(
+                size=12  
+            ),
         ),
-        xaxis=dict(
-            **set_xticks(week_day_check),  # Apply x-ticks settings
-            range=[start_date, end_date]
+        hoverlabel=dict(font=dict(
+            family="IBM Plex Mono"
+        )),
+        legend=dict(
+            x=1,
+            y=1,
+            xanchor="left",
+            yanchor="top",
+            #itemwidth=420,
+            orientation='v',
+            title = dict(
+                text="<b>NBA Teams</b>",
+       
+                ),
+                #xanchor='center'),
+            #xanchor='left',
+            font=dict(
+                size=12,
+                weight='normal',
+
+            ),
+            traceorder="normal",
+            #bordercolor="Black",
+            #borderwidth=2,
+            entrywidth=70,
         )
     )
 
-    # Step 4: Toggle point markers based on dot-check
+    """fig.update_layout(
+        #showlegend=False,
+        yaxis=dict(
+          
+            tickmode = 'array',
+            tickvals = def_tickvals,
+            range=[30.5,0.5], 
+            
+            domain=[0.1,1],
+            showline=True,
+            linecolor='black',
+            #linewidth=2,
+        ),
+"""
+
+    #fig.update_layout(
+    #    yaxis=dict(
+    #        range=chart_yrange,
+    #        dtick=chart_dtick,
+    #        tickvals=chart_tickvals,
+    #        title_standoff=title_standoff
+    #    ),
+    #    xaxis= dict(
+    #        set_xticks(week_day_check),
+    #        range=date_range_slider_set(date_range_slider)
+            
+    #    )
+    #)
+    #print(dot_check)
     if dot_check == ['show']:
         linemode = 'lines+markers'
         fig.update_traces(mode=linemode, marker=dict(size=6))
     else:
         linemode = 'lines'
-        fig.update_traces(mode=linemode)
-
-    # Step 5: Update hover template
+        fig.update_traces(mode = linemode)
+    """
+    """
     for trace in fig.data:
         additional_hover = set_hovertemplate_format(week_day_check)
         trace.hovertemplate += additional_hover + '<extra></extra>'
     #fig.update_traces(hovertemplate = trace.hovertemplate + set_hovertemplate_format(week_day_check))
-    
-    # Team Dropdown
+    """
     for trace, vis_update in zip(fig.data, dropdown_update_layout(team_dropdown)):
         trace.visible = vis_update["visible"]
+    """
 
     # Step 6: Add or remove vrect based on zone_check
     rectangles = zone_check_rect(zone_check)
     if zone_check:
         for rect in rectangles:
             fig.add_hrect(**rect)
-
     # Step 7: Apply team dropdown filtering
     for trace, vis_update in zip(fig.data, drilldown_update_layout(team_dropdown)):
         trace.visible = vis_update["visible"]

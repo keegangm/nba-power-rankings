@@ -421,7 +421,7 @@ details[open] summary::after{
 
 #team-dropdown-group{
     flex-shrink: 0;
-    min-width: 300px;
+    min-width: 500px;
     background-color: var(--whitebg);
     padding: 15px;
     margin-bottom: 0px;
