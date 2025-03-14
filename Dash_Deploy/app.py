@@ -401,30 +401,6 @@ def get_datemarks_from_wk(start=start_date, end=end_date, step=7):
     # Ensure marks are ordered by week number
     return dict(sorted(marks.items()))
 
-#def get_datemarks_from_wk(start=start_date, end=end_date, step=7):
-#    """Generate date marks of step."""
-#    marks = {}
-
-#    start_week = get_nba_week_no(start)
-#    end_week = get_nba_week_no(end)
-
-#    marks[start_week] = start.strftime('%b. %-d')
-#    marks[end_week] = start.strftime('%b. %-d')
-
-#    total_weeks = end_week - start_week
-
-#    if total_weeks >= 4:  # Only if there's enough space
-#        mid1_week = start_week + (total_weeks // 3)
-#        mid2_week = start_week + 2 * (total_weeks // 3)
-
-#        mid1_date = start + timedelta(weeks=(mid1_week - start_week))
-#        mid2_date = start + timedelta(weeks=(mid2_week - start_week))
-
-#        marks[mid1_week] = mid1_date.strftime('%b. %-d')
-#        marks[mid2_week] = mid2_date.strftime('%b. %-d')
-
-#    # Sort marks by week number (important for Dash sliders)
-#    return dict(sorted(marks.items()))
 
 
 ##### APP #####
@@ -442,31 +418,17 @@ app.layout = html.Div([
     ),
     html.Div([
         html.Div([
-            dcc.Graph(
-                    figure=make_fig(df_string_for_graph_2()), 
+            dcc.Graph( 
+                    #figure=make_fig(df_string_for_graph_2()), 
                     id="pr-graph",
             ),
+            dcc.Store(id='trace-visibility-store'),
         ],
                 id='graph-subdiv',
             ),
         html.Div([
             html.Div([
-                #dcc.RangeSlider(
-                #    min=nba_week_from_date(start_date), 
-                #    max=nba_week_from_date(end_date),
-                #    #step= 1, 
-                #    value=[nba_week_from_date(start_date), nba_week_from_date(end_date)], 
-                #    #marks=marks,
-                #    marks =  get_datemarks_from_wk(start=start_date,end=end_date, step=28),
-                #    tooltip= {
-                #        'always_visible': False,
-                #        'placement': 'top', 
-
-                #        'transform':'getSundayByNBAWeek'},
-                #    id='date-range-slider-wk',
-                #),
                 dcc.RangeSlider(
-                    #id="date-range-slider",
                     step=1,
                     id='date-range-slider-wk',
                     min=nba_week_from_date(start_date),
@@ -706,34 +668,57 @@ def set_xticks(value):
     return xticks_set
 
 @app.callback(
-    Output('pr-graph','figure'),
+    Output('pr-graph', 'figure'),
+    Output('trace-visibility-store', 'data'),
     Input('date-range-slider-wk', 'value'),
     Input('rank-radio', 'value'),
     Input('zone-check', 'value'),
     Input('week-day-check', 'value'),
     Input('team-dropdown', 'value'),
-    Input('dot-check','value'),
-
+    Input('dot-check', 'value'),
+    Input('trace-visibility-store', 'data'),
+    Input('pr-graph', 'restyleData'),
+    #State('pr-graph', 'restyleData'),
+    #State('pr-graph', 'relayoutData')
+    State('pr-graph', 'figure')
 )
 
-def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_dropdown, dot_check):
 
+def update_graph(
+    date_range_slider, rank_radio, zone_check, week_day_check, team_dropdown, dot_check, visibility_state, restyle_data, current_figure
+    ): #, relayout_data):
+
+    # Step 1: Create df
     df = df_string_for_graph_2()
-
     fig = make_fig(df)
+    print(df)
 
- 
+    if visibility_state is None:
+        visibility_state = [True] * len(df.index)
+
+    # Step 2: Set visibility states and trace indices from restyle_data
+    if restyle_data:
+
+        if len(restyle_data) >= 2 and isinstance(restyle_data[0], dict) and 'visible' in restyle_data[0]:
+            
+            visibility_states = restyle_data[0]['visible']
+            trace_indices = restyle_data[1]
+            
+            for i, trace_idx in enumerate(trace_indices):
+                if trace_idx < len(visibility_state):
+                    visibility_state[trace_idx] = visibility_states[i]
+
+    # Step 3: Apply chart settings (e.g., y-range, x-ticks, etc.)
     chart_settings = set_chart_yrange(rank_radio)
     chart_yrange = chart_settings[0]
     chart_dtick = chart_settings[1]
-    chart_tickvals=chart_settings[2]
-    title_standoff=chart_settings[3]
+    chart_tickvals = chart_settings[2]
+    title_standoff = chart_settings[3]
 
     if date_range_slider is None:
-        date_range_slider = [nba_week_from_date(dt.datetime(2024,10,20)), nba_week_from_date(sunday_from_nba_week(df_string_for_graph_2().columns.max()))]
-                             
+        date_range_slider = [nba_week_from_date(dt.datetime(2024, 10, 20)), nba_week_from_date(sunday_from_nba_week(df_string_for_graph_2().columns.max()))]
+
     start_date = date_range_slider[0]
-    #print(date_range_slider)
     end_date = date_range_slider[1]
     fig.update_layout(
         yaxis=dict(
@@ -742,38 +727,42 @@ def update_graph(date_range_slider, rank_radio, zone_check,week_day_check, team_
             tickvals=chart_tickvals,
             title_standoff=title_standoff
         ),
-        xaxis= dict(
-            set_xticks(week_day_check),
+        xaxis=dict(
+            **set_xticks(week_day_check),  # Apply x-ticks settings
             range=[start_date, end_date]
-            
         )
     )
-    #print(dot_check)
+
+    # Step 4: Toggle point markers based on dot-check
     if dot_check == ['show']:
-        linemode='lines+markers'
-        fig.update_traces(mode = linemode, marker=dict(size=6,))
+        linemode = 'lines+markers'
+        fig.update_traces(mode=linemode, marker=dict(size=6))
     else:
         linemode = 'lines'
-        fig.update_traces(mode = linemode)
-    
+        fig.update_traces(mode=linemode)
+
+    # Step 5: Update hover template
     for trace in fig.data:
         additional_hover = set_hovertemplate_format(week_day_check)
         trace.hovertemplate += additional_hover + '<extra></extra>'
-    #fig.update_traces(hovertemplate = trace.hovertemplate + set_hovertemplate_format(week_day_check))
-    
-    for trace, vis_update in zip(fig.data, drilldown_update_layout(team_dropdown)):
-        trace.visible = vis_update["visible"]
 
+
+    # Step 6: Add or remove vrect based on zone_check
     rectangles = zone_check_rect(zone_check)
-
     if zone_check:
-        
         for rect in rectangles:
             fig.add_hrect(**rect)
 
-    return fig
+    # Step 7: Apply team dropdown filtering
+    for trace, vis_update in zip(fig.data, drilldown_update_layout(team_dropdown)):
+        trace.visible = vis_update["visible"]
 
+    for i, trace in enumerate(fig.data):
+        if i < len(visibility_state):
+            trace.visible = visibility_state[i]
 
+    # Return
+    return fig, visibility_state
 
 
 if __name__ == '__main__':
