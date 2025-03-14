@@ -286,7 +286,7 @@ def make_fig(df_piv_rk):
             l=5,
         ),
         xaxis=dict(
-            domain=[0.1,0.95],
+            domain=[0.05,0.96],
             range=[start_date, end_date],
             tickmode='array',
             tickvals=weeks_array,
@@ -411,7 +411,7 @@ app.title = "NBA Power Rankings Viz"
 app.layout = html.Div([
     html.Div([
         html.H1('Visualizing NBA Power Rankings', id='page-title'),
-        html.H3(f"Tracking top sports media outlets to map the NBA's ever-shifting landscape.", id='page-subtitle'),
+        html.H3(f"Tracking NBA.com, ESPN, BR, and other top outlets to map the NBA's ever-shifting landscape.", id='page-subtitle'),
         html.Div(className="shape-sep"),
         html.H5('Created by Keegan Morris', className='byline'),
         ],id='header-div'
@@ -537,9 +537,8 @@ app.layout = html.Div([
     html.Div(
         id="text-attribution",
         children=[
-            dcc.Markdown('''Visit [github.com/keegangm](https://github.com/keegangm/nba-power-rankings/) for more information''',link_target="_blank", id='attrib-markdown'),
-            html.P(f"Power rankings from NBA.com, ESPN, Bleacher Report, CBS Sports, and more", id='sources'),         
-            html.P(f"Updated {clean_date()}", id='attrib-date'),         
+            html.A(f"keegan-morris.com", href="https://keegan-morris.com/2025/02/25/dash-deploy-power-rankings/", target="_blank", id='attrib-url'),
+            html.P(f"updated {clean_date()}", id='attrib-date'),
     ]),
 ])
 
@@ -691,7 +690,7 @@ def update_graph(
     # Step 1: Create df
     df = df_string_for_graph_2()
     fig = make_fig(df)
-    print(df)
+    #print(df)
 
     if visibility_state is None:
         visibility_state = [True] * len(df.index)

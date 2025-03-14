@@ -110,7 +110,7 @@ h3{
     background-color: var(--whitebg);
     /*padding: 20px 15px;*/
     border-radius: var(--bordrad);
-    padding: 6px;
+    padding: 2px 25px;
     /*margin: -5px;*/
     /*margin-top: 15px;*/
     /*padding: 5px 0;*/
@@ -296,10 +296,11 @@ details[open] summary::after{
 
 #text-attribution {
     font-size: 11px;
+    margin-top: 0px;
     font-style: italic;
     text-align:right;
     padding-right: 20px;
-    line-height: 5px;
+    /*line-height: 5px;*/
     display:block;
     padding-bottom: 15px;
 }
@@ -395,4 +396,10 @@ details[open] summary::after{
     transform: translateX(50%) !important ;
     right: 0% !important;
     left: auto !important;
+}
+
+.rc-slider-tooltip {
+    white-space: nowrap; /* Prevent text wrapping */
+    position: absolute;
+    transform: translateX(-50%); /* Center the tooltip */
 }
