@@ -103,19 +103,13 @@ h3{
 }
 
 
-
 #graph-div{
     /*border: 5px solid red;*/
     /*background-color: green;*/
     background-color: var(--whitebg);
     /*padding: 20px 15px;*/
-<<<<<<< HEAD
-    border-radius: var(--bordrad);
-    padding: 2px 25px;
-=======
     border-radius: var(--bordrad) 0 var(--bordrad) var(--bordrad);
     padding: 6px;
->>>>>>> 898a236 (Successfully change layout, Couldn't fully debug multi select.)
     /*margin: -5px;*/
     /*margin-top: 15px;*/
     /*padding: 5px 0;*/
@@ -123,9 +117,7 @@ h3{
 
 #graph-subdiv{
     background-color: var(--whitebg);
-    /*background-color: green;*/
-    /*border: 2px solid black;*/
-    /*border-radius: var(--bordrad);*/
+
     padding: 2px; /*15px 10px 15px;*/
     /*z-index: 2 ;*/
 }
@@ -149,33 +141,6 @@ h3{
     border-radius: var(--bordrad) ;
     padding-bottom: initial;
 }
-/*
-#lower-section::after{
-    content:"";
-    position: absolute;
-    width: 100%;
-    max-width: calc(1200px - 10px);
-    /*height:30px;*/
-    /*width: 60%;*/
-    /*margin: auto;*/
-    /*border-bottom: 1px dashed var(--sec-fontcolor);*/
-    /*transform: translate(-10px);*/
-    /*transform: scale(93.5%);*/
-    /*bottom:-113px;*/
-    /*transform: translate3d();*/
-    /*background: linear-gradient(to bottom, var(--whitebg) 24%,  rgb(249,249,249,0));*/
-    /*opacity: .6;*/
-
-/*}*/
-/*  */
-
-/*#lower-section:has(details[open])::after {
-    opacity: 0;*/
-
-    /*transition: opacity 0.3s ease-in-out;*/
-
-  /*}*/
-
 
 details > summary {
     /*padding: 150px;*/
@@ -196,7 +161,7 @@ summary {
     font-size: 14px;
     /*font-weight: bold;*/
     list-style: none; /* Removes default disclosure triangle in some browsers */
-  }
+}
 
 summary::after {
     content: "+"; /* Default arrow */
@@ -344,9 +309,10 @@ details[open] summary::after{
 }
 
 #date-label{
+    
     padding-right: 15px;
     /*align-content: center;*/
-
+    
 }
 
 #slider-grp-div{
@@ -377,25 +343,25 @@ details[open] summary::after{
 
 .rc-slider-track {
     background-color: var(--accentcolor);
-  }
-  
+}
+
 .rc-slider-dot-active {  
     border-color: var(--accentcolor);
     border: solid 2px var(--accentcolor);
-  }
-  
+}
+
 .rc-slider-handle {
     background-color: var(--accentcolor);
     border-color: var(--accentcolor);
-  }
-  
+}
+
 .rc-slider-handle:hover {
     border-color: var(--accentcolor);
-  }
-  
+}
+
 .rc-slider-handle-active:active {
     border-color: var(--accentcolor);
-  }
+}
 
 .rc-slider-mark-text:last-child{
     transform: translateX(50%) !important ;
@@ -403,31 +369,40 @@ details[open] summary::after{
     left: auto !important;
 }
 
-<<<<<<< HEAD
 .rc-slider-tooltip {
     white-space: nowrap; /* Prevent text wrapping */
     position: absolute;
     transform: translateX(-50%); /* Center the tooltip */
-=======
+}
+
 /* Search Tab */
 #team-dropdown-div{
     display: flex;
     min-width: 200px;
     justify-content: flex-end;
- 
     align-items: right;
-    
+
+}
+
+#all-teams-checkbox{
+    /*display: flex;
+    align-items: center;*/
+    font-size: 13px;
+    /*gap: 8px;*/
 }
 
 #team-dropdown-group{
     flex-shrink: 0;
-    min-width: 500px;
+    min-width: 300px;
     background-color: var(--whitebg);
     padding: 15px;
-    margin-bottom: 0px;
+    margin-bottom: -5px;
     border-radius: var(--bordrad) var(--bordrad) 0 0;
-    /*height: 80px;*/
-    /*display:inline-block;*/
-    /*margin-right: 0;*/
->>>>>>> 898a236 (Successfully change layout, Couldn't fully debug multi select.)
+
+}
+.Select.is-disabled .Select-value {
+    background-color: #f0f0f0; /* Light gray background */
+    color: #888; /* Gray text color */
+    border: 1px solid #ccc; /* Light gray border */
+    opacity: 0.7; /* Slightly transparent */
 }
