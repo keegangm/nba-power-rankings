@@ -762,6 +762,18 @@ def update_graph(
         additional_hover = set_hovertemplate_format(week_day_check)
         trace.hovertemplate += additional_hover + '<extra></extra>'
     #fig.update_traces(hovertemplate = trace.hovertemplate + set_hovertemplate_format(week_day_check))
+    
+    fig.update_layout(
+        yaxis=dict(
+            range=chart_yrange,
+            dtick=chart_dtick,
+            tickvals=chart_tickvals,
+            #title_standoff=title_standoff
+        ),
+        xaxis=dict(
+            **set_xticks(week_day_check),  # Apply x-ticks settings
+        )
+    )
 
     # Step 6: Add or remove vrect based on zone_check
     rectangles = zone_check_rect(zone_check)
