@@ -51,11 +51,6 @@ def nba_week_from_date(date=today):
 
     return int(nba_week_no)
 
-#def most_recent_sunday(date):
-#    """Find date of most recent Sunday."""
-#    date = pd.to_datetime(date)
-#    return date - pd.to_timedelta(date.weekday() + 1, unit='D')
-
 def most_recent_sunday(date):
     """Find date of most recent Sunday."""
     date = pd.to_datetime(date)
@@ -91,7 +86,6 @@ def clean_date(raw_date=None):
     parsed_date = input_date.strftime("%b. %d, %Y")
     return parsed_date
 
-
 def create_season_rks_df(df: pd.DataFrame):
     """Filter the DataFrame to only include rows with valid NBA weeks."""
     df = df[df['nba_week'].notna()]
@@ -126,8 +120,6 @@ def create_rk_pt(df: pd.DataFrame):
     #rk_pt will be input for graphs
     return rk_pt
 
-
-
 def create_filtered_df(df: pd.DataFrame, start_date='2024-10-20',end_date=dt.datetime.today()):
     """Filter the DataFrame to only include rows with specified NBA weeks."""
     
@@ -156,8 +148,6 @@ def df_string_for_graph_2(start='2024-10-20', end=dt.datetime.today()):
   
     return rk_pt
 
-#print(df_string_for_graph_2())
-
 def get_max_min_week(start='2024-10-20', end=dt.datetime.today()):
     """Get NBA WEEK # for start and end date"""
 
@@ -181,7 +171,6 @@ def create_sundays_array():
         sundays_array.append(sunday_from_nba_week(i))
 
     return weeks_array, sundays_array
-
 
 def make_dropdown_options():
     teams = read_nba_teams_ref()
@@ -223,7 +212,6 @@ end_date = sunday_from_nba_week(df_string_for_graph_2().columns.max())
 # Convert to integer timestamps
 start_timestamp = int(start_date.timestamp())
 end_timestamp = int(end_date.timestamp())
-
 
 def get_datemarks_from_wk(start=start_date, end=end_date, step=7):
     """Generate date marks with start, end, and up to 2 evenly spaced intermediates."""
@@ -302,7 +290,7 @@ app.layout = html.Div([
                     #figure=make_fig(df_string_for_graph_2()), 
                     id="pr-graph",
             ),
-            dcc.Store(id='trace-visibility-store'),
+            dcc.Store(id='trace-visibility-store', data=[True] * 30),
         ],
                 id='graph-subdiv',
             ),
@@ -492,7 +480,6 @@ def set_hovertemplate_format(value):
 
     return hovertemplate_btmlines
 
-
 def set_xticks(value):
     """Alternate between date and nba_week # XTick labels."""
     weeks_array, sundays_array = create_sundays_array()
@@ -528,6 +515,8 @@ def set_xticks(value):
             )
         )
     return xticks_set
+
+
 
 def df_string_for_graph_subset(team_input):
     applicable_teams = set()
@@ -569,12 +558,6 @@ def date_range_slider_set(slider):
 
     return start_date, end_date
 
-
-#print(date_range_slider_set())
-
-#print(start_date, end_date)
-
-
 @app.callback(
     Output('pr-graph', 'figure'),
     Output('trace-visibility-store', 'data'),
@@ -586,9 +569,10 @@ def date_range_slider_set(slider):
     Input('all-teams-checkbox', 'value'),
     Input('team-dropdown', 'value'),
     Input('dot-check','value'),
-
+    Input('pr-graph','restyleData'),
+    State('trace-visibility-store', 'data'),
+    #State('pr-graph', 'figure')
 )
-
 def update_graph(
     date_range_slider, 
     rank_radio, 
@@ -596,8 +580,11 @@ def update_graph(
     week_day_check, 
     all_teams_checkbox,
     team_dropdown, 
-    dot_check
-    ):
+    dot_check,
+    restyle_data,
+    visibility_state
+):
+    print(restyle_data)
 
     # Step 1: Create df
     df = df_string_for_graph_2()
@@ -606,7 +593,7 @@ def update_graph(
     chart_yrange = chart_settings[0]
     chart_dtick = chart_settings[1]
     chart_tickvals = chart_settings[2]
-    title_standoff = chart_settings[3]
+    #title_standoff = chart_settings[3]
 
     filtered_df = df_string_for_graph_subset(team_dropdown)
     weeks_array, sundays_array = create_sundays_array()
@@ -622,10 +609,8 @@ def update_graph(
 
     if isinstance(team_dropdown, list):
         selected_teams = team_dropdown
-        #print(f"Selected teams are: {selected_teams}")
 
     fig = go.Figure()
-
 
     for team in filtered_df.index:
         base_hover = f"<b>{team.upper()}</b>"
@@ -635,23 +620,57 @@ def update_graph(
                 x=filtered_df.columns,  # Weeks
                 y=filtered_df.loc[team],  # Rankings
                 mode='lines+markers',
-                #name=team,  # Team name as the trace name
-                #marker=dict(size=10),
                 line=dict(width=2),
-                #mode='lines+markers',
                 marker=dict(size=6,),
-
-                #line=dict(width=2),
                 name=teams.nba_abbrname(team),
                 opacity = 0.85,
                 marker_color=teams.team_color1(team),
                 hovertemplate=base_hover,
-        
                 visible=True,
                 showlegend=True,
-        ))
+            )
+        )
 
-    #print(date_range_slider_set(date_range_slider))
+    # Step 3: Handle legend interactions (update visibility_state)
+    if restyle_data:
+        # restyle_data is a list of dictionaries
+        for update in restyle_data:
+            if 'visible' in update:
+                # Update visibility_state based on restyleData
+                new_visibility = update['visible']
+                if isinstance(new_visibility, list):
+                    # If multiple traces are updated, apply the changes
+                    visibility_state = new_visibility
+                elif isinstance(new_visibility, bool):
+                    # If a single trace is updated, find the corresponding trace and update its visibility
+                    trace_index = update.get('index', 0)  # Default to the first trace if index is not provided
+                    if isinstance(trace_index, list):
+                        # If multiple indices are provided, update all of them
+                        for idx in trace_index:
+                            visibility_state[idx] = new_visibility
+                    else:
+                        # If a single index is provided, update it
+                        visibility_state[trace_index] = new_visibility
+
+    # Step 4: Initialize visibility_state if it's None or invalid
+    if visibility_state is None or len(visibility_state) != len(fig.data):
+        visibility_state = [True] * len(fig.data)  # Default to all traces visible
+
+    # Step 5: Apply team dropdown filtering
+    for trace, vis_update in zip(fig.data, dropdown_update_layout(team_dropdown)):
+        trace.visible = vis_update["visible"]
+
+    # Step 6: Reapply the visibility state to preserve legend-selected traces
+    if visibility_state and len(visibility_state) == len(fig.data):
+        for i, trace in enumerate(fig.data):
+            trace.visible = visibility_state[i]
+    else:
+        # If visibility_state is invalid, ensure all traces are visible
+        for trace in fig.data:
+            trace.visible = True
+
+
+    
 
     start_week, end_week = date_range_slider_set(date_range_slider)
     # Update layout for better visualization
@@ -738,16 +757,11 @@ def update_graph(
     else:
         linemode = 'lines'
         fig.update_traces(mode = linemode)
-    """
-    """
+
     for trace in fig.data:
         additional_hover = set_hovertemplate_format(week_day_check)
         trace.hovertemplate += additional_hover + '<extra></extra>'
     #fig.update_traces(hovertemplate = trace.hovertemplate + set_hovertemplate_format(week_day_check))
-    """
-    for trace, vis_update in zip(fig.data, dropdown_update_layout(team_dropdown)):
-        trace.visible = vis_update["visible"]
-    """
 
     # Step 6: Add or remove vrect based on zone_check
     rectangles = zone_check_rect(zone_check)
@@ -755,8 +769,9 @@ def update_graph(
         for rect in rectangles:
             fig.add_hrect(**rect)
 
-    #return fig, team_vals, all_teams_checkbox_out, all_teams_checkbox
-    return fig, all_teams_checkbox, dropdown_disabled
+    
+    
+    return fig, [trace.visible for trace in fig.data], dropdown_disabled
 
 
 if __name__ == '__main__':
@@ -765,7 +780,11 @@ if __name__ == '__main__':
 
 """
 #CSS
-# Make Inactive options grey
-# Top Bar
+# X Make Inactive options grey
+# X Top Bar
+# [] Visual improvements for dropdown so long queries don't make it tall
+
+
+# [] RESTORE "STORE" f'n so filtering during trace focus does not change selex
 
 """
