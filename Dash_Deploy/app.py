@@ -13,6 +13,9 @@ import plotly.graph_objects as go
 import support.nba_teams as teams
 from dateutil.parser import parse
 import pytz
+import requests
+from io import StringIO
+
 
 def find_file(file_name):
     file_name = f"{file_name}.csv"
@@ -34,9 +37,24 @@ def read_nba_week():
     return pd.read_csv(WEEK_REFERENCE_PATH, parse_dates=['sunday'], dtype={'nba_week': int})
 
 def read_ranking_file():
-    """Read NBA Ranking file"""
-    #rk = get_csv('latest_powerrankings')
-    #rk['date'] = pd.to_datetime(rk['date'])
+    """Read NBA Ranking file from GitHub first, then local if unavailable."""
+
+    github_url = 'https://raw.githubusercontent.com/keegangm/nba-power-rankings/main/Dash_Deploy/support/data/latest_powerrankings.csv'
+
+    # Start with GitHub
+    try:
+        response = requests.get(github_url, timeout=5)
+        response.raise_for_status()
+        
+        csv_content = StringIO(response.text)
+        
+        from_github = pd.read_csv(csv_content, parse_dates=['date'], date_format="%y%m%d")
+        
+        #print("Loaded rankings from GitHub.")
+        return from_github
+    except (requests.RequestException, pd.errors.ParserError) as e:
+        print(f"GitHub fetch failed: {e}. Falling back to local file.")
+    # Fallback to local file
     rk = pd.read_csv(find_file('latest_powerrankings'), parse_dates=['date'], date_format="%y%m%d") # 02-Dec-24
     return rk
 
@@ -779,15 +797,3 @@ def update_graph(
 
 if __name__ == '__main__':
     app.run_server(debug=True, dev_tools_hot_reload=False)
-
-
-"""
-#CSS
-# X Make Inactive options grey
-# X Top Bar
-# [] Visual improvements for dropdown so long queries don't make it tall
-
-
-# [] RESTORE "STORE" f'n so filtering during trace focus does not change selex
-
-"""
