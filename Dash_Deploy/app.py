@@ -571,7 +571,7 @@ def date_range_slider_set(slider):
     Input('dot-check','value'),
     Input('pr-graph','restyleData'),
     State('trace-visibility-store', 'data'),
-    #State('pr-graph', 'figure')
+    State('pr-graph', 'figure')
 )
 def update_graph(
     date_range_slider, 
@@ -582,9 +582,11 @@ def update_graph(
     team_dropdown, 
     dot_check,
     restyle_data,
-    visibility_state
+    visibility_state,
+    figure
 ):
-    print(restyle_data)
+    #print("Visibility State (Before):", visibility_state)  # Debugging
+    #print("Restyle Data:", restyle_data)  # Debugging
 
     # Step 1: Create df
     df = df_string_for_graph_2()
@@ -633,32 +635,22 @@ def update_graph(
 
     # Step 3: Handle legend interactions (update visibility_state)
     if restyle_data:
-        # restyle_data is a list of dictionaries
-        for update in restyle_data:
-            if 'visible' in update:
-                # Update visibility_state based on restyleData
-                new_visibility = update['visible']
-                if isinstance(new_visibility, list):
-                    # If multiple traces are updated, apply the changes
-                    visibility_state = new_visibility
-                elif isinstance(new_visibility, bool):
-                    # If a single trace is updated, find the corresponding trace and update its visibility
-                    trace_index = update.get('index', 0)  # Default to the first trace if index is not provided
-                    if isinstance(trace_index, list):
-                        # If multiple indices are provided, update all of them
-                        for idx in trace_index:
-                            visibility_state[idx] = new_visibility
-                    else:
-                        # If a single index is provided, update it
-                        visibility_state[trace_index] = new_visibility
+        if isinstance(restyle_data[0], dict) and 'visible' in restyle_data[0]:
+            new_visibility = restyle_data[0]['visible']
+            trace_indices = restyle_data[1]
+
+            for i, trace_idx in enumerate(trace_indices):
+                if trace_idx < len(visibility_state):
+                    visibility_state[trace_idx] = new_visibility[i]
 
     # Step 4: Initialize visibility_state if it's None or invalid
     if visibility_state is None or len(visibility_state) != len(fig.data):
         visibility_state = [True] * len(fig.data)  # Default to all traces visible
 
     # Step 5: Apply team dropdown filtering
-    for trace, vis_update in zip(fig.data, dropdown_update_layout(team_dropdown)):
-        trace.visible = vis_update["visible"]
+    dropdown_visibility = dropdown_update_layout(team_dropdown)
+    for i, trace in enumerate(fig.data):
+        trace.visible = dropdown_visibility[i]["visible"] and visibility_state[i]
 
     # Step 6: Reapply the visibility state to preserve legend-selected traces
     if visibility_state and len(visibility_state) == len(fig.data):
@@ -668,7 +660,6 @@ def update_graph(
         # If visibility_state is invalid, ensure all traces are visible
         for trace in fig.data:
             trace.visible = True
-
 
     
 
