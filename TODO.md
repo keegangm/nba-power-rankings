@@ -3,7 +3,7 @@
 > #### [Project Landing Page](https://github.com/keegangm/nba-power-rankings)
 
 ### `bugfix`
-- [ ] Maintain trace focus when reframing graph (i.e. "Miami" stays as the only trace when the range slider is used)
+- [x] Maintain trace focus when reframing graph (i.e. "Miami" stays as the only trace when the range slider is used)
 
 ### `chore`
 - [ ] Fewer xticks at narrow breakpoint
