@@ -62,6 +62,15 @@ us_central_tz = pytz.timezone('US/Central')
 today = dt.datetime.now(us_central_tz).date()
 #print(today)
 
+### add function to calculate latest date in file
+def get_max_pr_date():
+    """Get date of most recent power rankings set present in 'latest_powerrankings.csv' file."""
+    rk = read_ranking_file()
+    #print(rk)
+    sorted_df = rk.sort_values(by='date', ascending=False)
+    max_date = sorted_df.max()['date']
+    return max_date
+
 def nba_week_from_date(date=today):
     """Get NBA Week number"""
     wk_df = read_nba_week()
@@ -407,7 +416,7 @@ app.layout = html.Div([
         id="text-attribution",
         children=[
             html.A(f"keegan-morris.com", href="https://keegan-morris.com/2025/02/25/dash-deploy-power-rankings/", target="_blank", id='attrib-url'),
-            html.P(f"updated {clean_date()}", id='attrib-date'),
+            html.P(f"data updated {clean_date(str(get_max_pr_date()))}", id='attrib-date'),
     ]),
 ])
 
