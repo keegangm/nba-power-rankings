@@ -10,12 +10,12 @@
 
 ### `feature`
 - [ ] Add team records / strength of schedule
-- [ ] Add event annotations
+- [-] Add event annotations
 - [ ] Individual team profiles
 
 ### `experiment`
 - [ ] Animate over time
-- [ ] Filter by source
+- [-] Filter by source
 - [ ] Add climbers / fallers
 
 ## Archive
