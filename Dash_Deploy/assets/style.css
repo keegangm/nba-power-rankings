@@ -9,7 +9,8 @@
     --bordrad: 13px;
     --fontcolor: #2d2d2d;
     --sec-fontcolor: rgb(92, 92, 92);
-    --accentcolor: /*#991de6;*/ #860038; 
+    --accentcolor: #007AC1; /* thunder */
+    /*--accentcolor: #991de6; #860038;*/ /*cavs*/
     --text-font: "IBM Plex Sans", Arial, Helvetica, sans-serif;
     --tech-font: "IBM Plex Mono", 'Courier New', Courier, monospace;
 }
