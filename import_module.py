@@ -619,6 +619,85 @@ def get_fox_soup(URL):
         cases.append(case)
     return(cases)
 
+def get_fox_soup2(URL):
+
+    cases = []
+
+    headers={"User-Agent": "Mozilla/5.0"}
+    response = requests.get(URL, headers=headers)
+    #response = requests.get(URL)
+    fox_soup = BeautifulSoup(response.content, "lxml")
+
+    #print(fox_soup)
+    #return fox_soup
+    
+    #return fox_soup
+    teams_fox = fox_soup.find_all('a', {"class": "entity-title"})
+
+    #print(teams_fox)
+    
+
+    # `url` has already been defined
+    # 2C source 
+    source = 'Fox'
+     
+    # 3.A.i. author 
+    #auth_si_class="link_13bb9r0"
+    author = fox_soup.find("div", {"class":'contributor-name'}).text.strip()
+
+    print(author)
+    # 3.A.ii. date (format '241011')
+    div_tag = fox_soup.find("div", {"class":'info-text'})
+    #ic(div_tag.text.strip())
+    #ic(div_tag)
+    date_fox = div_tag.find_all("span")[1].get_text().strip()
+    #date = datemod.file_date(date_fox)
+    date_fox= date_fox[:-3]
+    date = datemod.file_date(date_fox)
+    
+    # 3.B. entry parsing 
+
+    # featured in numbered list
+    pr_header = fox_soup.find(text='NBA POWER RANKINGS')
+
+    #pr_list = pr_header.select("ol")
+    pr_list = fox_soup.find_all('a', {'class':'entity-title'})
+
+    for index, team_fox in enumerate(pr_list):
+
+        # 3.B.i. team 
+        # uniform team naming across sources (use 'teams.nba_tmname()')
+        team_fox = team_fox.get_text().strip()
+        team = teams.nba_tmname(team_fox)
+
+        # 3.B.i.1a get team abbreviation (use 'teams.nba_abbrname()')
+        team_abbrev = teams.nba_abbrname(team)
+
+        # 3.B.ii. rank 
+        rank = index + 1
+
+        #ic(rank, team_abbrev)
+
+        # 3.B.iii comments
+        comm_fox = ""
+        comments = comm_fox
+
+        # 3.B.iv entryname 
+        entryname = make_entryname(source, str(date), team_abbrev)
+        
+        case = {
+            "entryname":entryname, 
+            "teamname":team, 
+            "ranking": rank,
+            "author": author,
+            "source": source,
+            "date": date, 
+            "url":URL,
+            "comments": comments
+        }
+        cases.append(case)
+    return(cases)
+
 def find_latest_file(folder_path,format=''):
     """Find most recent file in specified folder."""
     try:
@@ -755,8 +834,12 @@ def get_rankings(URL):
 
     elif source =='foxsports':
         print(f"Source is {source}... now beginning sub-function")
-        soup = get_fox_soup(URL)
-    
+        try:
+            soup = get_fox_soup(URL)
+        
+        except:
+            soup = get_fox_soup2(URL)
+            
     else: 
         print('Source not yet defined')
         return None
