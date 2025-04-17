@@ -14,9 +14,11 @@
 - [ ] Individual team profiles
 
 ### `experiment`
+- [ ] Animate on first load
 - [ ] Animate over time
 - [-] Filter by source
 - [ ] Add climbers / fallers
+    - Add as secondary, non-selectable trace?
 
 ## Archive
 ### `bugfix`
