@@ -15,6 +15,9 @@ from dateutil.parser import parse
 import pytz
 import requests
 from io import StringIO
+import plotly.io as pio
+#import io
+from base64 import b64encode
 
 
 def find_file(file_name):
@@ -168,6 +171,8 @@ def df_string_for_graph():
   
     return rk_pt
 
+data_points = len(create_season_rks_df(create_and_merge_rank_week()))
+
 def df_string_for_graph_2(start='2024-10-20', end=dt.datetime.today()):
     ranking_file = find_file('latest_powerrankings')
     df = create_filtered_df(create_and_merge_rank_week(), start, end)
@@ -192,12 +197,14 @@ def create_sundays_array():
     """Create arrays of Sundays and corresponding NBA week #s."""
     weeks_array = []
     sundays_array = []
-    for i in range(-5, 30):
+    for i in range(1, 30):
         weeks_array.append(i)
         #sundays_array.append(sunday_lookup(i)+1)
         sundays_array.append(sunday_from_nba_week(i))
 
     return weeks_array, sundays_array
+
+date_strings = [d.strftime('%b %-d') for d in create_sundays_array()[1]]
 
 def make_dropdown_options():
     teams = read_nba_teams_ref()
@@ -271,14 +278,16 @@ def get_datemarks_from_wk(start=start_date, end=end_date, step=7):
 
 ##### APP #####
 app = Dash(__name__)
+#buffer - io.StringIO()
 server = app.server
 app.title = "NBA Power Rankings Viz"
 
 app.layout = html.Div([
     html.Div([
         html.H1('Visualizing NBA Power Rankings', id='page-title'),
-        html.H3(f"Tracking NBA.com, ESPN, BR, and other top outlets to map the NBA's ever-shifting landscape.", id='page-subtitle'),
-        html.Div(className="shape-sep"),
+        html.H3(f"Tracking NBA.com, ESPN, BR, and other top sources to make sense of the league's glorious chaos.", id='page-subtitle'),
+        #html.Div(className="shape-sep"),
+        html.Hr(),
         html.H5('Created by Keegan Morris', className='byline'),
         ],id='header-div'
     ),
@@ -345,10 +354,10 @@ app.layout = html.Div([
                         children=[
                             
                             html.Div([
-                                html.H5('Filter by Range', id="range-header", className="button-label"),
+                                html.H5('Display Range', id="range-header", className="button-label"),
                                 dcc.RadioItems(
                                     [
-                                        {'label':'1-30', 'value': 'def-range'}, 
+                                        {'label':'All Teams*', 'value': 'def-range'}, 
                                         {'label': 'Top 5', 'value': 'bot-5'},
                                         {'label': 'Bottom 5', 'value': 'top-5'}, 
                                     ], 
@@ -357,24 +366,24 @@ app.layout = html.Div([
                                     labelStyle={'display':'inline-block'},
                                     className="radio-label"
                                 ),
-                                html.P('1-30 is default', id="note1", className="footnote")
+                                html.P('*default', id="note1", className="footnote")
                             ],id="rank-range", className="button-grp"),
-                            html.Div(
-                                [
-                                    html.H5('Highlighting', className="button-label"),
-                                    html.Div([
-                                        dcc.Checklist(
-                                            id='zone-check',
-                                            className="check-label",
-                                            options=[{'label': 'Top & Bottom 5', 'value': 'linear'}],
-                                            value=['zone']
-                                        ), 
-                                    ],
-                                    )
-                                ]
-                            ,id="zone-highlights", 
-                            className="button-grp"
-                            ),
+                            #html.Div(
+                            #    [
+                            #        html.H5('Highlighting', className="button-label"),
+                            #        html.Div([
+                            #            dcc.Checklist(
+                            #                id='zone-check',
+                            #                className="check-label",
+                            #                options=[{'label': 'Top & Bottom 5', 'value': 'linear'}],
+                            #                value=['zone']
+                            #            ), 
+                            #        ],
+                            #        )
+                            #    ]
+                            #,id="zone-highlights", 
+                            #className="button-grp"
+                            #),
                             html.Div(
                                 [
                                     html.H5('Update XTicks Labels', className="button-label"),
@@ -393,13 +402,13 @@ app.layout = html.Div([
                             ),
                             html.Div(
                                 [
-                                    html.H5('Show Point Markers', className="button-label"),
+                                    html.H5('Mark Scatter Points', className="button-label"),
                                     html.Div([
                                         dcc.Checklist(
                                             id='dot-check',
                                             className="check-label",
                                             options=[{'label': 'Show Marks', 'value': 'show'}],
-                                            value=['show']
+                                            value=[]
                                         ), 
                                     ],
                                     )
@@ -416,7 +425,8 @@ app.layout = html.Div([
         id="text-attribution",
         children=[
             html.A(f"keegan-morris.com", href="https://keegan-morris.com/2025/02/25/dash-deploy-power-rankings/", target="_blank", id='attrib-url'),
-            html.P(f"data updated {clean_date(str(get_max_pr_date()))}", id='attrib-date'),
+            html.P(f"data updated {clean_date(str(get_max_pr_date()))} ({data_points} observations)", id='attrib-date'),
+            #html.P(f"", id='observations'),
     ]),
 ])
 
@@ -446,65 +456,34 @@ def set_chart_yrange(value):
         "bot-5": {
             "yrange": [5.5,0.5],
             'dtick':1,
-            "tickvals": [1,2,3,4,5],
+            "tickvals": [1,3,5],
             'title_standoff': 22.8,
         },
         "top-5": {
             "yrange": [30.5,25.5],
             'dtick':1,
-            "tickvals": [30,29,28,27,26],
+            "tickvals": [30,28,26],
             'title_standoff': 12,
             },
         "def-range": {
             "yrange": [30.5,0.5],
             'dtick': 5,
-            'tickvals': [1, 5, 10, 15, 20, 25, 30],
+            'tickvals': [1, 10, 20, 30],
             'title_standoff': 12,
         }
     } 
     settings = options.get(value, options[value])
     return settings['yrange'], settings['dtick'], settings['tickvals'], settings['title_standoff']
 
-def zone_check_rect(value):
-    """Enable top-5 and bottom-5 highlight zones from checkbox input."""
-    if value == ['zone', 'linear']:
-        r_dict = [
-        {
-                # bottom-5 rect
-                "type": "rect",
-                "x0": 0,
-                "x1": 1, 
-                "y0": 26, 
-                "y1": 30, 
-                "fillcolor": "slategrey", 
-                "opacity": 0.25,
-                "line": {"color": "royalblue", "width": 2,"dash": 'dot'},  # Border color and width
-                "layer": "below"
-            },
-            {
-                # top-5 rect
-                "type": "rect", 
-                "x0": 0, 
-                "x1": 1, 
-                "y0": 1, 
-                "y1": 5, 
-                "fillcolor": "slategrey", 
-                "opacity": 0.25,
-                "line": {"color": "royalblue", "width": 2, "dash": 'dot'},  # Border color and width
-                "layer": "below"
-            }
-        ]
-    else:
-        r_dict = []
-
-    return r_dict
-
 def set_hovertemplate_format(value):
-    if value == ['dates', 'linear']:
+    """Set appropriate hover template format based on display mode."""
+    if 'linear' in value:
         hovertemplate_btmlines = '<br><b>week</b>: %{x}<br><b>rank</b>: %{y}'
     else: 
-        hovertemplate_btmlines = '<br><b>date</b>: %{x}<br><b>rank</b>: %{y}'
-
+        date = sunday_from_nba_week(value)
+        customdata = date
+        hovertemplate_btmlines = '<br><b>date</b>: %{text}<br><b>rank</b>: %{y}'
+        #date = sunday_from_nba_week(value)
     return hovertemplate_btmlines
 
 def set_xticks(value):
@@ -521,22 +500,24 @@ def set_xticks(value):
                 font_size=18,
             ),
             tickmode='array',
-            tickvals=weeks_array,  
-            ticktext=weeks_array, 
-            dtick = 5,
+            tickvals=weeks_array[::4],  
+            ticktext=weeks_array[::4], 
+            #dtick = 10,
             tickfont=dict(
                 size=12  
             ),
             tickangle=0,
         )
     else:
+        
+     
         xticks_set = dict(
 
 
             tickmode='array',
-            tickvals=weeks_array, 
-            ticktext=sundays_str, 
-            dtick = 14,
+            tickvals=weeks_array[::4], 
+            ticktext=sundays_str[::4], 
+            #dtick = 20,
             tickfont=dict(
                 size=12
             )
@@ -591,7 +572,7 @@ def date_range_slider_set(slider):
     Output('team-dropdown', 'disabled'),
     Input('date-range-slider-wk', 'value'),
     Input('rank-radio', 'value'),
-    Input('zone-check', 'value'),
+    #Input('zone-check', 'value'),
     Input('week-day-check', 'value'),
     Input('all-teams-checkbox', 'value'),
     Input('team-dropdown', 'value'),
@@ -603,7 +584,7 @@ def date_range_slider_set(slider):
 def update_graph(
     date_range_slider, 
     rank_radio, 
-    zone_check,
+    #zone_check,
     week_day_check, 
     all_teams_checkbox,
     team_dropdown, 
@@ -654,6 +635,7 @@ def update_graph(
                 name=teams.nba_abbrname(team),
                 opacity = 0.85,
                 marker_color=teams.team_color1(team),
+                text=date_strings,
                 hovertemplate=base_hover,
                 visible=True,
                 showlegend=True,
@@ -698,13 +680,14 @@ def update_graph(
         xaxis_title="Week",
         yaxis_title="Ranking",
         legend_title="Teams",
-        paper_bgcolor='#f9f9f9',
+        #paper_bgcolor='#FBFBFB',
         plot_bgcolor= 'white',
         template="presentation",
-        font_family="IBM Plex Mono",
+        font_family="IBM Plex Sans",
         margin=dict(
-            t=25,
-            l=15,
+            t=45,
+            l=45,
+            r=105,
         ),
         xaxis=dict(
             domain=[0.05,0.97],
@@ -715,14 +698,16 @@ def update_graph(
             ticktext=sundays_str,
             title=dict(
                 text="<b>Date</b>",
+                #family="JetBrains M",
                 font_size=18,
             ),
             
             
             tickfont=dict(
+                family='JetBrains Mono',
                 size=12  
             ),
-            tickangle=70,
+            #tickangle=70,
             showline=True,
             linecolor='black',
         ),
@@ -738,11 +723,12 @@ def update_graph(
                 font_size=18,
             ),
             tickfont=dict(
-                size=12  
+                size=12,
+                family='JetBrains Mono'
             ),
         ),
         hoverlabel=dict(font=dict(
-            family="IBM Plex Mono"
+            family="JetBrains Mono"
         )),
         legend=dict(
             x=1,
@@ -793,14 +779,13 @@ def update_graph(
         )
     )
 
-    # Step 6: Add or remove vrect based on zone_check
-    rectangles = zone_check_rect(zone_check)
-    if zone_check:
-        for rect in rectangles:
-            fig.add_hrect(**rect)
+    ## Step 6: Add or remove vrect based on zone_check
+    #rectangles = zone_check_rect(zone_check)
+    #if zone_check:
+    #    for rect in rectangles:
+    #        fig.add_hrect(**rect)
 
-    
-    
+    pio.write_html(fig, file='nba_plot.html', full_html=False)    
     return fig, [trace.visible for trace in fig.data], dropdown_disabled
 
 
