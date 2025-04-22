@@ -16,20 +16,21 @@ import base64
 import sys
 from pathlib import Path
 
-# Get absolute path to support module
-current_dir = Path(__file__).parent
-support_path = current_dir / "support"  # Adjust if support is at a different level
+# Absolute path to support module
+support_path = Path(__file__).parent / "support"
+sys.path.insert(0, str(support_path))
 
-# Debugging (check paths exist)
-print(f"Current directory: {current_dir}")  # Check Streamlit logs for this
-print(f"Support path: {support_path}")
-
-sys.path.insert(0, str(support_path))  # insert(0) gives it highest priority
 try:
-    import nba_teams
-except ImportError as e:
-    raise ImportError(f"Failed to import nba_teams from {support_path}. Error: {e}")
-
+    from support import nba_teams  # Explicit relative import
+except ImportError:
+    try:
+        import nba_teams  # Fallback
+    except ImportError as e:
+        raise RuntimeError(
+            f"❌ Failed to import nba_teams. "
+            f"Check: {list(support_path.glob('*'))} "
+            f"Current sys.path: {sys.path}"
+        ) from e
 
 def find_file(file_name):
     """Find file within Dash_Deploy/support/ or support/."""
