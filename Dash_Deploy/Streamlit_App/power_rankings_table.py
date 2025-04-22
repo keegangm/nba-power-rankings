@@ -12,7 +12,24 @@ import matplotlib.pyplot as plt
 from datetime import date, timedelta
 from io import BytesIO
 import base64
-import support.nba_teams as nba_teams
+
+import sys
+from pathlib import Path
+
+# Get absolute path to support module
+current_dir = Path(__file__).parent
+support_path = current_dir / "support"  # Adjust if support is at a different level
+
+# Debugging (check paths exist)
+print(f"Current directory: {current_dir}")  # Check Streamlit logs for this
+print(f"Support path: {support_path}")
+
+sys.path.insert(0, str(support_path))  # insert(0) gives it highest priority
+try:
+    import nba_teams
+except ImportError as e:
+    raise ImportError(f"Failed to import nba_teams from {support_path}. Error: {e}")
+
 
 def find_file(file_name):
     """Find file within Dash_Deploy/support/ or support/."""
