@@ -1,3 +1,17 @@
+import subprocess
+import streamlit as st
+
+# Debug: Check installed packages
+result = subprocess.run(['pip', 'list'], capture_output=True, text=True)
+st.code(result.stdout)
+
+# Debug: Check requirements.txt exists
+try:
+    with open('requirements.txt') as f:
+        st.code(f.read())
+except FileNotFoundError:
+    st.error("requirements.txt NOT FOUND in deployment!")
+
 import streamlit as st
 
 import pandas as pd
