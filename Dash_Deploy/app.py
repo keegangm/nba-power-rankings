@@ -343,7 +343,7 @@ def make_team_dropdown_options():
 app = Dash(__name__)
 # buffer - io.StringIO()
 server = app.server
-app.title = "DEV: NBA Power Rankings Viz"
+app.title = "NBA Power Rankings Viz"
 
 app.layout = html.Div(
     [
