@@ -1,3 +1,4 @@
+
 /* style.css */
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
 
@@ -16,6 +17,7 @@
     /*--accentcolor: #881fc9; cavs*/
     --text-font: "IBM Plex Sans", Arial, Helvetica, sans-serif;
     --tech-font: "JetBrains Mono", 'Courier New', Courier, monospace;
+    --interface-font-size: 14px;
 }
 
 body{
@@ -371,40 +373,71 @@ hr {
 }
 
 /* Search Tab */
-#graph-header{
+.graph-header{
     display: flex;
+    /*margin*/
+    padding: 5px 35px;
     /*min-width: 200px;*/
 }   
 
 #graph-title{
-    flex: 1;
+    /*flex: 1;*/
     text-align: left;
 }
 
 #team-dropdown-subdiv {
     display: flex;
-    justify-content: flex-end;
-    align-items: right;
+    /*justify-content: flex-end;*/
+    margin-top: 0px;
+    align-items: center;
+    gap: 6px;
+    align-content: center;
 
+}
+
+/*  Dropdown */
+
+.dropdown {
+    /*background-color: green;*/
+    padding-top: 15px;
 }
 
 #all-teams-checkbox{
     /*display: flex;
     align-items: center;*/
-    font-size: 13px;
+    font-size: var(--interface-font-size);
+    /*padding-top: 10px;*/
+    padding-right: 20px;
     /*gap: 8px;*/
     white-space: nowrap;
 }
 
-#team-dropdown {
-    min-width: 200px;
+#team-dropdown, #team-team-dropdown {
+    min-width: 400px;
+    float: right;
+    /*padding-top: 15px;*/
+    align-content: top;
 }
 
+#team-dropdown, #all-teams-checkbox {
+    margin: 0px;
+}
+
+
+
 #team-dropdown-subdiv{
-    display: flex;
+    /*display: flex;*/
+    float: right;
     justify-content: flex-end;
-    align-items: center;
+    align-content: top;
     gap: 10px;
+}
+
+.graph-title{
+    font-family: var(--text-font);
+    font-weight: 600;
+    font-size: 1.5em !important;
+
 }
 
 #graph-title h5, #graph-title div {
@@ -413,22 +446,71 @@ hr {
     text-align: left;
 }
 
-#team-dropdown-group{
+.super{
+    background-color: var(--whitebg);
+    padding: 10px;
+    border-radius: var(--bordrad);
+}
+
+.graph-header{
+    height: 90px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    /*flex-shrink: 0;*/
-    /*min-width: 500px;*/
-    width: 100%;
-    /*background-color: var(--whitebg);*/
-    padding: 15px;
-    margin-bottom: -5px;
-    /*border-radius: var(--bordrad) var(--bordrad) 0 0;*/
-
+    /*align-items: center;*/
+    /*background-color: purple;*/
 }
+
+#graph-layouts-options{
+    display: flex;
+    justify-content: space-between;
+    max-width: 70%;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    font-size: var(--interface-font-size);
+}
+
+
 .Select.is-disabled .Select-value {
     background-color: #f0f0f0; /* Light gray background */
     color: #888; /* Gray text color */
     border: 1px solid #ccc; /* Light gray border */
     opacity: 0.7; /* Slightly transparent */
 }
+.graph-title{
+    /*font-weight: 600;*/
+    font-size: 1.2em;
+    margin-top: 15px;
+    margin-bottom: 0px;
+    padding-bottom: 8px;
+}
+.graph-subtitle{
+    margin-top: 0px;
+    font-weight: 500;
+    padding-top: 0px;
+    font-size: .95em;
+    font-family: var(--tech-font);
+    /*color:green !important;*/
+    text-align: left;
+    color: var(--sec-fontcolor)
+}
+
+
+#team-dropdown-select-div {
+    display: flex;
+    justify-content: space-between;
+    align-items: top;
+    width: 100%;
+}
+
+.tab{
+    /*background-color: orange !important; */
+    border-radius: var(--bordrad) var(--bordrad) 0 0;
+    gap: 9px;
+    width: 90%;
+    margin:auto;
+    height: 55px;
+    background-color: var(--pagebg);
+    color: var(--sec-fontcolor);
+}
+

@@ -230,21 +230,21 @@ def create_sundays_array():
     return weeks_array, sundays_array
 
 
-date_strings = [d.strftime("%b %-d") for d in create_sundays_array()[1]]
+date_strings = [d.strftime("%b. %-d") for d in create_sundays_array()[1]]
 
 
 def make_dropdown_options():
     teams = read_nba_teams_ref()
     dropdown_options = []
     conf_set = set()
-    team_set = set()
+    #team_set = set()
     div_set = set()
 
     for index, row in teams.iterrows():
         team = row["teamname"]
         conf = row["conference"]
         div = row["division"]
-        team_set.add(team)
+        #team_set.add(team)
         conf_set.add(conf)
         div_set.add(div)
 
@@ -263,11 +263,11 @@ def make_dropdown_options():
     for element in sorted(div_set):
         dropdown_options.append({"label": element, "value": element, "disabled": False})
 
-    dropdown_options.append(
-        {"label": "--- Teams ---", "value": "divider", "disabled": True}
-    )
-    for element in sorted(team_set):
-        dropdown_options.append({"label": element, "value": element, "disabled": False})
+    #dropdown_options.append(
+    #    {"label": "--- Teams ---", "value": "divider", "disabled": True}
+    #)
+    #for element in sorted(team_set):
+    #    dropdown_options.append({"label": element, "value": element, "disabled": False})
 
     return dropdown_options
 
@@ -347,6 +347,7 @@ app.title = "DEV: NBA Power Rankings Viz"
 
 app.layout = html.Div(
     [
+        # Header Section
         html.Div(
             [
                 html.H1("Visualizing NBA Power Rankings", id="page-title"),
@@ -357,156 +358,193 @@ app.layout = html.Div(
                 # html.Div(className="shape-sep"),
                 html.Hr(),
                 html.H5("Created by Keegan Morris", className="byline"),
+                html.A(id='graph-a'),
             ],
             id="header-div",
         ),
+        # Tabs Section
         dcc.Tabs(
+        
             id="tab-group",
             value="teams",
             children=[
+                # League Tab
                 dcc.Tab(
                     label="Leaguewide Look",
                     value="teams",
+                    #className='tab',
                     children=[
+                        # superdiv1
                         html.Div(
                             [
-                                # html.H5('Select Conference/Division', className="button-label"),
                                 html.Div(
                                     [
-                                        html.Div(id="graph-title"),
+                                        # html.H5('Select Conference/Division', className="button-label"),
                                         html.Div(
                                             [
-                                                dcc.Checklist(
-                                                    id="all-teams-checkbox",
-                                                    options=[
-                                                        {
-                                                            "label": "  All Teams",
-                                                            "value": "all",
-                                                        }
-                                                    ],
-                                                    value=["all"],
+                                                html.Div(
+                                                    id="lg-graph-title",
+                                                    className="graph-title",
                                                 ),
-                                                dcc.Dropdown(
-                                                    make_dropdown_options(),
-                                                    id="team-dropdown",
-                                                    className="check-label",
-                                                    value=["West", "East"],
-                                                    # clearable=False,
-                                                    multi=True,
-                                                    disabled=False,
+                                                html.Div(
+                                                    [
+                                                    html.Div(
+                                                        [
+                                                            dcc.Checklist(
+                                                                id="all-teams-checkbox",
+                                                                options=[
+                                                                    {
+                                                                        "label": "  All Teams",
+                                                                        "value": "all",
+                                                                    }
+                                                                ],
+                                                                value=["all"],
+                                                            ),
+                                                            dcc.Dropdown(
+                                                                make_dropdown_options(),
+                                                                id="team-dropdown",
+                                                                className="check-label",
+                                                                value=["West", "East"],
+                                                                # clearable=False,
+                                                                multi=True,
+                                                                disabled=False,
+                                                            ),
+                                                        ],
+                                                        id="team-dropdown-subdiv",
+                                                        className="button-grp",
+                                                        ),
+                                                    ], className='dropdown',
+                                                ),
+                                                dcc.Store(
+                                                    id="previous-all-teams-checkbox",
+                                                    data=[],
                                                 ),
                                             ],
-                                            id="team-dropdown-subdiv",
-                                            className="button-grp",
+                                            id="team-dropdown-select-div",
+                                        )
+                                    ],
+                                    className="graph-header",
+                                ),
+                                # ],
+                                # id="team-dropdown-div"),
+                                # html.Div([
+                                html.Div(
+                                    [
+                                        dcc.Graph(
+                                            # figure=make_fig(df_string_for_graph_2()),
+                                            id="pr-graph",
+                                            className="graph",
                                         ),
                                         dcc.Store(
-                                            id="previous-all-teams-checkbox", data=[]
+                                            id="trace-visibility-store",
+                                            data=[True] * 30,
                                         ),
                                     ],
-                                    id="team-dropdown-select-div",
-                                )
-                            ],
-                            id="graph-header",
-                        ),
-                        # ],
-                        # id="team-dropdown-div"),
-                        # html.Div([
-                        html.Div(
-                            [
-                                dcc.Graph(
-                                    # figure=make_fig(df_string_for_graph_2()),
-                                    id="pr-graph",
-                                ),
-                                dcc.Store(
-                                    id="trace-visibility-store", data=[True] * 30
                                 ),
                             ],
-                            id="graph-subdiv",
+                            id="superdiv-1",
+                            className="super",
                         ),
                     ],
                 ),
                 dcc.Tab(
                     label="Team Drilldown",
                     value="drilldown",
+                    #className='tab',
                     children=[
                         html.Div(
                             [
                                 html.Div(
                                     [
-                                        html.H3(id="team-graph-title"),
-                                        html.H5(id="team-graph-subtitle"),
-                                    ],
-                                    id="title-div",
-                                ),
-                                html.Div(
-                                    [
-                                        dcc.Dropdown(
-                                            make_team_dropdown_options(),
-                                            id="team-team-dropdown",
-                                            className="team-check-label",
-                                            value="Los Angeles Lakers",
-                                            # clearable=False,
-                                            # multi=True,
-                                            disabled=False,
-                                        ),
-                                    ],
-                                    id="team-team-dropdown-subdiv",
-                                    className="button-grp",
-                                ),
-                                # dcc.Store(id="previous-all-teams-checkbox", data=[]),
-                            ],
-                            id="team-team-dropdown-select-div",
-                        ),
-                        html.Div(
-                            [
-                                dcc.Graph(
-                                    # figure=make_fig(df_string_for_graph_2()),
-                                    id="team-pr-graph",
-                                ),
-                                # dcc.Store(id="trace-visibility-store", data=[True] * 30),
-                            ],
-                            id="team-graph-subdiv",
-                        ),
-                        html.Div(
-                            [
-                                html.Div(
-                                    [
-                                        dcc.RadioItems(
+                                        html.Div(
                                             [
-                                                {
-                                                    "label": "Default View",
-                                                    "value": "def-view",
-                                                },
-                                                {
-                                                    "label": "Weekly Highs/Lows",
-                                                    "value": "his-los",
-                                                },
-                                                {
-                                                    "label": "Ranking vs. Record",
-                                                    "value": "record",
-                                                },
-                                                # {
-                                                #    "label": "Rises/Drops",
-                                                #    "value": "rises",
-                                                # },
+                                                html.H3(
+                                                    id="team-graph-title",
+                                                    className="graph-title",
+                                                ),
+                                                html.H5(
+                                                    id="team-graph-subtitle",
+                                                    className="graph-subtitle",
+                                                ),
                                             ],
-                                            id="graph-layouts-options",
-                                            value="def-view",
+                                            id="title-div",
                                         ),
-                                        html.Div(id="view-output"),
+                                        html.Div([
+                                            html.Div(
+                                                
+                                            [
+                                                dcc.Dropdown(
+                                                    make_team_dropdown_options(),
+                                                    id="team-team-dropdown",
+                                                    className="team-check-label",
+                                                    value="Los Angeles Lakers",
+                                                    # clearable=False,
+                                                    # multi=True,
+                                                    disabled=False,
+                                                ),
+                                            ],
+                                            id="team-team-dropdown-subdiv",
+                                            className="button-grp",
+                                            ),
+
+                                    ], className='dropdown'),
+                                        # dcc.Store(id="previous-all-teams-checkbox", data=[]),
                                     ],
-                                    id="graph-layouts",
+                                    id="team-team-dropdown-select-div",
+                                    className="graph-header",
                                 ),
-                            ]
+                                html.Div(
+                                    [
+                                        dcc.Graph(
+                                            # figure=make_fig(df_string_for_graph_2()),
+                                            id="team-pr-graph",
+                                            className="graph",
+                                        ),
+                                        # dcc.Store(id="trace-visibility-store", data=[True] * 30),
+                                    ],
+                                    id="team-graph-subdiv",
+                                ),
+                                html.Div(
+                                    [
+                                        html.Div(
+                                            [
+                                                dcc.RadioItems(
+                                                    [
+                                                        {
+                                                            "label": "Default View",
+                                                            "value": "def-view",
+                                                        },
+                                                        {
+                                                            "label": "Weekly Highs/Lows",
+                                                            "value": "his-los",
+                                                        },
+                                                        {
+                                                            "label": "Ranking vs. Record",
+                                                            "value": "record",
+                                                        },
+                                                        # {
+                                                        #    "label": "Rises/Drops",
+                                                        #    "value": "rises",
+                                                        # },
+                                                    ],
+                                                    id="graph-layouts-options",
+                                                    value="def-view",
+                                                ),
+                                                # html.Div(id="view-output"),
+                                            ],
+                                            id="graph-layouts",
+                                        ),
+                                    ]
+                                ),
+                            ],
+                            id="superdiv-2",
+                            className="super",
                         ),
                     ],
                 ),
-            ],
+            ],className='tab',
         ),
-        html.Div(
-            [],
-            id="graph-div",
-        ),
+        # Filters
         html.Div(
             [
                 html.Div(
@@ -634,6 +672,7 @@ app.layout = html.Div(
                 ),
             ]
         ),
+        # Footer
         html.Div(
             id="text-attribution",
             children=[
@@ -827,6 +866,7 @@ def show_title(team_input, checkbox):
     else:
         return " ".join(["Power Rankings:", team_input[0]])
 
+
 def show_team_graph_title(team_input, graph_layout_view):
     """Show selected teams ('All Teams' or otherwise) based on graph filters."""
     if graph_layout_view == "def-view":
@@ -835,6 +875,7 @@ def show_team_graph_title(team_input, graph_layout_view):
         return team_input, "Power Rankings vs. 20-Game Rolling Win%"
     else:
         return team_input, "Power Rankings Spread by Week"
+
 
 def date_range_slider_set(slider):
     # print(slider==None)
@@ -879,57 +920,6 @@ def create_weekly_summary():
     )
 
     return weekly_summary
-
-
-print(create_weekly_summary())
-
-
-# def create_hi_graph(filtered_df):
-#    """Create graph for highs and lows for individual team."""
-#    # pass
-#    fig = go.Figure()
-
-#    fig.add_trace(
-#        go.Scatter(
-#            x=filtered_df["nba_week_"],
-#            y=round(filtered_df["ranking_mean"], 2),
-#            # line=dict(color=color),
-#            name="Mean Ranking",
-#        )
-#    )
-
-#    x = filtered_df["nba_week_"].tolist() + filtered_df["nba_week_"].iloc[::-1].tolist()
-#    y_upper = filtered_df["ranking_max"].tolist()
-#    y_lower = filtered_df["ranking_min"].iloc[::-1].tolist()  # reversed
-#    y = y_upper + y_lower
-
-#    fig.add_trace(
-#        go.Scatter(
-#            x=x,
-#            y=y,
-#            fill="toself",
-#            # fillcolor=hex_to_rgba(color, 0.2),
-#            line=dict(color="rgba(0,0,0,0)"),  # transparent line
-#            hoverinfo="skip",
-#            name="Min-Max Range",
-#        )
-#    )
-
-#    # Optional: Adjust layout
-#    fig.update_layout(
-#        template="plotly_white",
-#        title=f'NBA Power Rankings Visualized: <span style="color: {color};">{team}</span><br><span style="color: gray;font-size: .8em">Highs and Lows of Weekly Rankings</span>',
-#        xaxis_title="Week",
-#        yaxis_title="Ranking",
-#        yaxis=dict(range=(30, 1)),  # since lower rankings are better
-#        showlegend=False,
-#        width=800,
-#        height=700,
-#        hovermode="x unified",
-#        # hovermode='x unified'
-#    )
-
-#    return fig
 
 
 def create_hi_graph(team):
@@ -1104,56 +1094,6 @@ def create_record_graph(team):
     return fig
 
 
-# def create_record_graph():
-#    """Create graph for PR vs running record for individual team."""
-#    fig = make_subplots(specs=[[{"secondary_y": True}]])
-
-#    team = input_df["teamname"].min()
-
-#    if team != "Brooklyn Nets":
-#        color2 = teams.team_color2(team)
-#    else:
-#        color2 = teams.team_color3(team)
-
-#    weekly_summary_filtered = weekly_summary.loc[
-#        weekly_summary["team_name_abbr"] == teams.nba_abbrname(team)
-#    ]
-#    fig.add_trace(
-#        go.Scatter(
-#            x=weekly_summary_filtered["nba_week"],
-#            y=round(weekly_summary_filtered["rolling_15"], 2),
-#            # mode='lines+markers',
-#            line=dict(color=color2, dash="dot"),  # width=4),
-#        ),
-#        secondary_y=True,
-#    ),
-
-#    # Main line (mean)
-#    fig.add_trace(
-#        go.Scatter(
-#            x=input_df["nba_week"],
-#            y=round(input_df["ranking_mean"], 2),
-#            line=dict(color=color),
-#            name="Mean Ranking",
-#        )
-#    )
-
-#    fig.update_layout(
-#        title=f'NBA Power Rankings Visualized: <span style="color: {color};">{team}</span><br><span style="font-size: 0.8em; color: gray;">Power Rankings Performance vs. Running Win % (last 15 games)</span>',
-#        template="plotly_white",
-#        xaxis_title="Week",
-#        yaxis_title="Ranking",
-#        yaxis=dict(range=(30, 0)),  # since lower rankings are better
-#        showlegend=False,
-#        width=800,
-#        hovermode="x unified",
-#        # hovermode='x unified'
-#        yaxis2=dict(range=(0, 1), tickmode="sync"),
-#    )
-
-#    return fig
-
-
 def team_graph(team):
 
     df = df_hi_los()
@@ -1229,7 +1169,7 @@ def choose_team_graph(radio_options, team):
     Output("pr-graph", "figure"),
     Output("trace-visibility-store", "data"),
     Output("team-dropdown", "disabled"),
-    Output("graph-title", "children"),
+    Output("lg-graph-title", "children"),
     # Output("view-output", "children"),
     # Team Graph
     Output("team-pr-graph", "figure"),
@@ -1292,11 +1232,11 @@ def update_graph(
         selected_teams = team_dropdown
 
     team_select = team_team_dropdown
-    #print(team)
+    # print(team)
     fig = go.Figure()
     fig2 = choose_team_graph(graph_layouts_options, team_select)
 
-    teams_no = len (filtered_df.index)
+    teams_no = len(filtered_df.index)
     # print(teams_no)
 
     if teams_no == 1:
@@ -1359,14 +1299,14 @@ def update_graph(
     # Update layout for better visualization
     fig.update_layout(
         autosize=True,
-        height=620,
+        height=450,
         xaxis_title="Week",
         yaxis_title="Mean Rank",
         legend_title="Teams",
         # paper_bgcolor='#FBFBFB',
         plot_bgcolor="white",
         template="presentation",
-        font_family="JetBrains Mono",
+        #font_family="JetBrains Mono",
         margin=dict(
             t=45,
             l=45,
@@ -1417,6 +1357,7 @@ def update_graph(
             font=dict(
                 size=12,
                 weight="normal",
+                family="JetBrains Mono"
             ),
             traceorder="normal",
             # bordercolor="Black",
@@ -1427,9 +1368,14 @@ def update_graph(
 
     fig2.update_layout(
         autosize=True,
-        height=620,
+        height=450,
         xaxis_title="Week",
         yaxis_title="Mean Rank",
+        margin=dict(
+            t=45,
+            l=45,
+            r=105,
+        ),
         xaxis=dict(
             domain=[0.05, 0.97],
             range=[start_week, end_week],
@@ -1483,7 +1429,7 @@ def update_graph(
             **set_xticks(week_day_check),  # Apply x-ticks settings
         ),
     )
-    
+
     fig2.update_layout(
         yaxis=dict(
             range=chart_yrange,
@@ -1495,13 +1441,21 @@ def update_graph(
             **set_xticks(week_day_check),  # Apply x-ticks settings
         ),
     )
-    try:
-        team_graph_title, team_graph_subtitle = team_select, show_team_graph_title(team_select, graph_layouts_options)[1]
-        # print(graph_title)
-    except:
-        team_graph_title = "Power Rankings: Los Angeles Lakers"
-        team_graph_subtitle = "subtitle"
+    #try:
+    
+    #else: 
+    #    team_select = team_select
+    
+    team_graph_title, team_graph_subtitle = (
+        show_team_graph_title(team_select, graph_layouts_options)
+        )
+        #print(graph_title)
+    #except:
+        #team_graph_title = "Power Rankings: Los Angeles Lakers"
+        #team_graph_subtitle = "subtitle"
 
+    if team_select is None:
+        team_graph_title = 'Los Angeles Lakers'
     # pio.write_html(fig, file="nba_plot.html", full_html=False)
     return (
         fig,
