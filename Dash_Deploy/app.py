@@ -21,6 +21,9 @@ from plotly.subplots import make_subplots
 # import io
 from base64 import b64encode
 
+import os
+
+
 
 def find_file(file_name):
     """Find file within Dash_Deploy/support/ or support/."""
@@ -906,7 +909,7 @@ def date_range_slider_set(slider):
 
 
 def create_weekly_summary():
-    games_df = pd.read_csv("250408games_df.csv")
+    games_df = pd.read_csv("/Users/keegan/Projects/NBA Power Rankings/250408games_df.csv")
     games_df = games_df.reset_index()
     games_df["most_recent_sunday"] = games_df["date"].apply(
         lambda x: most_recent_sunday(pd.to_datetime(x))
@@ -983,7 +986,7 @@ def create_hi_graph(team):
 
 
 def create_weekly_summary():
-    games_df = pd.read_csv("250408games_df.csv")
+    games_df = pd.read_csv("/Users/keegan/Projects/NBA Power Rankings/250408games_df.csv")
     games_df = games_df.reset_index()
     games_df["most_recent_sunday"] = games_df["date"].apply(
         lambda x: most_recent_sunday(pd.to_datetime(x))
