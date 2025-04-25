@@ -376,89 +376,10 @@ app.layout = html.Div(
         dcc.Tabs(
         
             id="tab-group",
-            value="teams",
+            value="drilldown",
             children=[
-                # League Tab
                 dcc.Tab(
-                    label="Leaguewide Look",
-                    value="teams",
-                    #className='tab',
-                    children=[
-                        # superdiv1
-                        html.Div(
-                            [
-                                html.Div(
-                                    [
-                                        # html.H5('Select Conference/Division', className="button-label"),
-                                        html.Div(
-                                            [
-                                                html.Div(
-                                                    id="lg-graph-title",
-                                                    className="graph-title",
-                                                ),
-                                                html.Div(
-                                                    [
-                                                    html.Div(
-                                                        [
-                                                            dcc.Checklist(
-                                                                id="all-teams-checkbox",
-                                                                options=[
-                                                                    {
-                                                                        "label": "  All Teams",
-                                                                        "value": "all",
-                                                                    }
-                                                                ],
-                                                                value=["all"],
-                                                            ),
-                                                            dcc.Dropdown(
-                                                                make_dropdown_options(),
-                                                                id="team-dropdown",
-                                                                className="check-label",
-                                                                value=["West", "East"],
-                                                                # clearable=False,
-                                                                multi=True,
-                                                                disabled=False,
-                                                            ),
-                                                        ],
-                                                        id="team-dropdown-subdiv",
-                                                        className="button-grp",
-                                                        ),
-                                                    ], className='dropdown',
-                                                ),
-                                                dcc.Store(
-                                                    id="previous-all-teams-checkbox",
-                                                    data=[],
-                                                ),
-                                            ],
-                                            id="team-dropdown-select-div",
-                                        )
-                                    ],
-                                    className="graph-header",
-                                ),
-                                # ],
-                                # id="team-dropdown-div"),
-                                # html.Div([
-                                html.Div(
-                                    [
-                                        dcc.Graph(
-                                            # figure=make_fig(df_string_for_graph_2()),
-                                            id="pr-graph",
-                                            className="graph",
-                                        ),
-                                        dcc.Store(
-                                            id="trace-visibility-store",
-                                            data=[True] * 30,
-                                        ),
-                                    ],
-                                ),
-                            ],
-                            id="superdiv-1",
-                            className="super",
-                        ),
-                    ],
-                ),
-                dcc.Tab(
-                    label="Team Drilldown",
+                    label="Team Performance",
                     value="drilldown",
                     #className='tab',
                     children=[
@@ -552,7 +473,87 @@ app.layout = html.Div(
                         ),
                     ],
                 ),
+                # League Tab
+                dcc.Tab(
+                    label="League Picture",
+                    value="teams",
+                    #className='tab',
+                    children=[
+                        # superdiv1
+                        html.Div(
+                            [
+                                html.Div(
+                                    [
+                                        # html.H5('Select Conference/Division', className="button-label"),
+                                        html.Div(
+                                            [
+                                                html.Div(
+                                                    id="lg-graph-title",
+                                                    className="graph-title",
+                                                ),
+                                                html.Div(
+                                                    [
+                                                    html.Div(
+                                                        [
+                                                            dcc.Checklist(
+                                                                id="all-teams-checkbox",
+                                                                options=[
+                                                                    {
+                                                                        "label": "  All Teams",
+                                                                        "value": "all",
+                                                                    }
+                                                                ],
+                                                                value=["all"],
+                                                            ),
+                                                            dcc.Dropdown(
+                                                                make_dropdown_options(),
+                                                                id="team-dropdown",
+                                                                className="check-label",
+                                                                value=["West", "East"],
+                                                                # clearable=False,
+                                                                multi=True,
+                                                                disabled=False,
+                                                            ),
+                                                        ],
+                                                        id="team-dropdown-subdiv",
+                                                        className="button-grp",
+                                                        ),
+                                                    ], className='dropdown',
+                                                ),
+                                                dcc.Store(
+                                                    id="previous-all-teams-checkbox",
+                                                    data=[],
+                                                ),
+                                            ],
+                                            id="team-dropdown-select-div",
+                                        )
+                                    ],
+                                    className="graph-header",
+                                ),
+                                # ],
+                                # id="team-dropdown-div"),
+                                # html.Div([
+                                html.Div(
+                                    [
+                                        dcc.Graph(
+                                            # figure=make_fig(df_string_for_graph_2()),
+                                            id="pr-graph",
+                                            className="graph",
+                                        ),
+                                        dcc.Store(
+                                            id="trace-visibility-store",
+                                            data=[True] * 30,
+                                        ),
+                                    ],
+                                ),
+                            ],
+                            id="superdiv-1",
+                            className="super",
+                        ),
+                    ],
+                ),
             ],className='tab',
+            
         ),
         # Filters
         html.Div(
