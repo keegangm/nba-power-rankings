@@ -10,7 +10,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 # Other imports
-import support.nba_teams as teams
+from Dash_Deploy.support.nba_teams import nba_teams as teams
 from dateutil.parser import parse
 import pytz
 import requests
@@ -31,7 +31,7 @@ external_stylesheets = [
 def find_file(file_name):
     """Find file within Dash_Deploy/support/ or support/."""
     file_name = f"{file_name}.csv"
-    possible_paths = [ 
+    possible_paths = [
         os.path.join("Dash_Deploy", "support", "data", file_name),
         os.path.join("support", "data", file_name),
     ]
@@ -102,7 +102,6 @@ def nba_week_from_date(date=today):
     return int(nba_week_no)
 
 
-
 def most_recent_sunday(date):
     """Find date of most recent Sunday ('round down')."""
     date = pd.to_datetime(date)
@@ -125,7 +124,6 @@ def create_and_merge_rank_week():
     return df
 
 
-
 def read_nba_teams_ref():
     nba_teams_ref = pd.read_csv(find_file("nba_teams_data"))
     # nba_teams_ref = get_csv('nba_teams_data')
@@ -143,7 +141,6 @@ def clean_date(raw_date=None):
     return parsed_date
 
 
-
 def create_season_rks_df(df: pd.DataFrame):
     """Filter the DataFrame to only include rows with valid NBA weeks."""
     df = df[df["nba_week"].notna()]
@@ -154,7 +151,8 @@ def create_season_rks_df(df: pd.DataFrame):
 
 
 df = create_season_rks_df(create_and_merge_rank_week())
-#print(df.loc[df['nba_week'] == 1].head())
+# print(df.loc[df['nba_week'] == 1].head())
+
 
 def create_source_pt(df: pd.DataFrame):
     """Create a pivot table for Sources and Counts of Rankings."""
@@ -178,7 +176,8 @@ def create_rk_pt(df: pd.DataFrame):
     return rk_pt
 
 
-#print(create_rk_pt(df))
+# print(create_rk_pt(df))
+
 
 def create_filtered_df(
     df: pd.DataFrame, start_date="2024-10-20", end_date=dt.datetime.today()
@@ -251,7 +250,8 @@ def sunday_from_nba_week(week: int):
         return (wk.loc[wk["nba_week"] == week, "sunday"]).item()
     except:
         return None
-    
+
+
 print(sunday_from_nba_week(1))
 
 
@@ -772,15 +772,18 @@ def create_hi_graph(team):
 
     return fig
 
-#def create_record_graph(team):
+
+# def create_record_graph(team):
 #    pass
 
 #    df = df_hi_los()
 #    df["sunday"] = df["sunday"] - pd.to_timedelta(-7, unit="D")
 #    #df = df.loc[df["teamname"] == team]
 
+
 def parse_date_format(date):
     pass
+
 
 def create_record_graph(team):
     df = df_hi_los()
@@ -791,7 +794,7 @@ def create_record_graph(team):
 
     color = teams.team_color1(team)
 
-    fig = make_subplots(specs=[[{'secondary_y': True}]])
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
 
     if team != "Charlotte Hornets":
         weekly_summary_filtered = weekly_summary.loc[
@@ -803,7 +806,7 @@ def create_record_graph(team):
         ]
     fig.add_trace(
         go.Scatter(
-            x=df['nba_week'],           
+            x=df["nba_week"],
             y=round(df["ranking_mean"], 2),
             line=dict(width=3),
             marker=dict(
@@ -818,7 +821,7 @@ def create_record_graph(team):
                 f"{base_hover}<br>"
                 "<b>date:</b> %{text}<br>"
                 "<b>mean rank:</b> %{y}<br><extra></extra>"
-            )
+            ),
         )
     ),
     if team in ("Brooklyn Nets", "San Antonio Spurs"):
@@ -976,9 +979,11 @@ def create_rises_graph(team):
     # pass
     # print("rises")
 
-#df = df_string_for_graph_2()
-#df = df.reset_index()
-#print(df)
+
+# df = df_string_for_graph_2()
+# df = df.reset_index()
+# print(df)
+
 
 def normal_graph(team):
 
@@ -990,11 +995,11 @@ def normal_graph(team):
 
     color = teams.team_color1(team)
 
-    fig = make_subplots(specs=[[{'secondary_y': True}]])
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
 
     fig.add_trace(
         go.Scatter(
-            x=df['nba_week'],           
+            x=df["nba_week"],
             y=round(df["ranking_mean"], 2),
             line=dict(width=3),
             marker=dict(
@@ -1009,7 +1014,7 @@ def normal_graph(team):
                 f"{base_hover}<br>"
                 "<b>date:</b> %{text}<br>"
                 "<b>mean rank:</b> %{y}<br><extra></extra>"
-            )
+            ),
         )
     ),
     return fig

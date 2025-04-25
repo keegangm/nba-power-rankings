@@ -282,6 +282,14 @@ start_timestamp = int(start_date.timestamp())
 end_timestamp = int(end_date.timestamp())
 
 
+def hex_to_rgba(hex_color, alpha=1.0):
+    hex_color = hex_color.lstrip("#")
+    r = int(hex_color[0:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+    return f"rgba({r},{g},{b},{alpha})"
+
+
 def get_datemarks_from_wk(start=start_date, end=end_date, step=7):
     """Generate date marks with start, end, and up to 2 evenly spaced intermediates."""
     marks = {}
@@ -312,6 +320,25 @@ def get_datemarks_from_wk(start=start_date, end=end_date, step=7):
     return dict(sorted(marks.items()))
 
 
+def make_team_dropdown_options():
+    """Make Dropdown Options"""
+    teams = read_nba_teams_ref()
+    dropdown_options = []
+
+    team_set = set()
+
+    for index, row in teams.iterrows():
+        team = row["teamname"]
+        team_set.add(team)
+
+    # dropdown_options.append({"label": "--- Conferences ---", "value": "divider", "disabled": True})
+
+    for element in sorted(team_set):
+        dropdown_options.append({"label": element, "value": element, "disabled": False})
+
+    return dropdown_options
+
+
 ##### APP #####
 app = Dash(__name__)
 # buffer - io.StringIO()
@@ -333,112 +360,151 @@ app.layout = html.Div(
             ],
             id="header-div",
         ),
-        html.Div(
-            [
-                # Comment
-                html.Div(
-                    [
-                        # html.H5('Select Conference/Division', className="button-label"),
+        dcc.Tabs(
+            id="tab-group",
+            value="teams",
+            children=[
+                dcc.Tab(
+                    label="Leaguewide Look",
+                    value="teams",
+                    children=[
                         html.Div(
                             [
-                                html.Div(id="graph-title"),
+                                # html.H5('Select Conference/Division', className="button-label"),
                                 html.Div(
                                     [
-                                        dcc.Checklist(
-                                            id="all-teams-checkbox",
-                                            options=[
-                                                {"label": "  All Teams", "value": "all"}
+                                        html.Div(id="graph-title"),
+                                        html.Div(
+                                            [
+                                                dcc.Checklist(
+                                                    id="all-teams-checkbox",
+                                                    options=[
+                                                        {
+                                                            "label": "  All Teams",
+                                                            "value": "all",
+                                                        }
+                                                    ],
+                                                    value=["all"],
+                                                ),
+                                                dcc.Dropdown(
+                                                    make_dropdown_options(),
+                                                    id="team-dropdown",
+                                                    className="check-label",
+                                                    value=["West", "East"],
+                                                    # clearable=False,
+                                                    multi=True,
+                                                    disabled=False,
+                                                ),
                                             ],
-                                            value=["all"],
+                                            id="team-dropdown-subdiv",
+                                            className="button-grp",
                                         ),
+                                        dcc.Store(
+                                            id="previous-all-teams-checkbox", data=[]
+                                        ),
+                                    ],
+                                    id="team-dropdown-select-div",
+                                )
+                            ],
+                            id="graph-header",
+                        ),
+                        # ],
+                        # id="team-dropdown-div"),
+                        # html.Div([
+                        html.Div(
+                            [
+                                dcc.Graph(
+                                    # figure=make_fig(df_string_for_graph_2()),
+                                    id="pr-graph",
+                                ),
+                                dcc.Store(
+                                    id="trace-visibility-store", data=[True] * 30
+                                ),
+                            ],
+                            id="graph-subdiv",
+                        ),
+                    ],
+                ),
+                dcc.Tab(
+                    label="Team Drilldown",
+                    value="drilldown",
+                    children=[
+                        html.Div(
+                            [
+                                html.Div(
+                                    [
+                                        html.H3(id="team-graph-title"),
+                                        html.H5(id="team-graph-subtitle"),
+                                    ],
+                                    id="title-div",
+                                ),
+                                html.Div(
+                                    [
                                         dcc.Dropdown(
-                                            make_dropdown_options(),
-                                            id="team-dropdown",
-                                            className="check-label",
-                                            value=["West", "East"],
+                                            make_team_dropdown_options(),
+                                            id="team-team-dropdown",
+                                            className="team-check-label",
+                                            value="Los Angeles Lakers",
                                             # clearable=False,
-                                            multi=True,
+                                            # multi=True,
                                             disabled=False,
                                         ),
                                     ],
-                                    id="team-dropdown-subdiv",
+                                    id="team-team-dropdown-subdiv",
                                     className="button-grp",
                                 ),
-                                dcc.Store(id="previous-all-teams-checkbox", data=[]),
+                                # dcc.Store(id="previous-all-teams-checkbox", data=[]),
                             ],
-                            id="team-dropdown-select-div",
-                        )
-                    ],
-                    id="graph-header",
-                ),
-                # ],
-                # id="team-dropdown-div"),
-                # html.Div([
-                html.Div(
-                    [
-                        dcc.Graph(
-                            # figure=make_fig(df_string_for_graph_2()),
-                            id="pr-graph",
+                            id="team-team-dropdown-select-div",
                         ),
-                        dcc.Store(id="trace-visibility-store", data=[True] * 30),
-                    ],
-                    id="graph-subdiv",
-                ),
-                html.Div(
-                    [
                         html.Div(
                             [
-                                dcc.RangeSlider(
-                                    step=1,
-                                    id="date-range-slider-wk",
-                                    min=nba_week_from_date(start_date),
-                                    max=nba_week_from_date(end_date),
-                                    marks=get_datemarks_from_wk(
-                                        start=start_date, end=end_date
-                                    ),
-                                    tooltip={
-                                        "always_visible": True,
-                                        "placement": "bottom",
-                                        "transform": "getSundayByNBAWeek",
-                                    },
+                                dcc.Graph(
+                                    # figure=make_fig(df_string_for_graph_2()),
+                                    id="team-pr-graph",
                                 ),
+                                # dcc.Store(id="trace-visibility-store", data=[True] * 30),
                             ],
-                            id="slider-div",
+                            id="team-graph-subdiv",
                         ),
-                    ]
-                ),
-                html.Div(
-                    [
                         html.Div(
                             [
-                                dcc.RadioItems(
+                                html.Div(
                                     [
-                                        {
-                                            "label": "Default View",
-                                            "value": "def-view",
-                                        },
-                                        {
-                                            "label": "His/Lows",
-                                            "value": "his-los",
-                                        },
-                                        {
-                                            "label": "Ranking vs Record",
-                                            "value": "record",
-                                        },
-                                        {
-                                            "label": "Rises/Drops",
-                                            "value": "rises",
-                                        },
-                                    ],id='graph-layouts-options', value='def-view',
+                                        dcc.RadioItems(
+                                            [
+                                                {
+                                                    "label": "Default View",
+                                                    "value": "def-view",
+                                                },
+                                                {
+                                                    "label": "Weekly Highs/Lows",
+                                                    "value": "his-los",
+                                                },
+                                                {
+                                                    "label": "Ranking vs. Record",
+                                                    "value": "record",
+                                                },
+                                                # {
+                                                #    "label": "Rises/Drops",
+                                                #    "value": "rises",
+                                                # },
+                                            ],
+                                            id="graph-layouts-options",
+                                            value="def-view",
+                                        ),
+                                        html.Div(id="view-output"),
+                                    ],
+                                    id="graph-layouts",
                                 ),
-                                html.Div(id='view-output')
-                            ],
-                            id="graph-layouts",
-                            
+                            ]
                         ),
-                    ]
+                    ],
                 ),
             ],
+        ),
+        html.Div(
+            [],
             id="graph-div",
         ),
         html.Div(
@@ -449,12 +515,31 @@ app.layout = html.Div(
                             [
                                 html.Summary("Filters"),
                                 html.Div(
+                                    [
+                                        dcc.RangeSlider(
+                                            step=1,
+                                            id="date-range-slider-wk",
+                                            min=nba_week_from_date(start_date),
+                                            max=nba_week_from_date(end_date),
+                                            marks=get_datemarks_from_wk(
+                                                start=start_date, end=end_date
+                                            ),
+                                            tooltip={
+                                                "always_visible": True,
+                                                "placement": "bottom",
+                                                "transform": "getSundayByNBAWeek",
+                                            },
+                                        ),
+                                    ],
+                                    id="slider-div",
+                                ),
+                                html.Div(
                                     className="button-array-html",
                                     children=[
                                         html.Div(
                                             [
                                                 html.H5(
-                                                    "Display Range",
+                                                    "Y-Axis Bounds",
                                                     id="range-header",
                                                     className="button-label",
                                                 ),
@@ -632,6 +717,28 @@ def set_hovertemplate_format(value):
     return hovertemplate_btmlines
 
 
+def df_hi_los(start="2024-10-20", end="2025-04-13"):
+    ranking_file = find_file("latest_powerrankings")
+    df = create_filtered_df(create_and_merge_rank_week(), start, end)
+
+    grouped_df = df.groupby(["teamname", "nba_week", "sunday"]).agg(
+        {"ranking": ["mean", "min", "max"]}
+    )
+
+    grouped_df = grouped_df.reset_index()
+    grouped_df.columns = [
+        "_".join(col).strip() if isinstance(col, tuple) else col
+        for col in grouped_df.columns
+    ]
+    grouped_df = grouped_df.rename(
+        columns={"nba_week_": "nba_week", "sunday_": "sunday", "teamname_": "teamname"}
+    )
+
+    # rk_pt = create_rk_pt(df)
+
+    return grouped_df
+
+
 def set_xticks(value):
     """Alternate between date and nba_week # XTick labels."""
     weeks_array, sundays_array = create_sundays_array()
@@ -720,6 +827,14 @@ def show_title(team_input, checkbox):
     else:
         return " ".join(["Power Rankings:", team_input[0]])
 
+def show_team_graph_title(team_input, graph_layout_view):
+    """Show selected teams ('All Teams' or otherwise) based on graph filters."""
+    if graph_layout_view == "def-view":
+        return team_input, "Power Rankings Performance by Week"
+    elif graph_layout_view == "record":
+        return team_input, "Power Rankings vs. 20-Game Rolling Win%"
+    else:
+        return team_input, "Power Rankings Spread by Week"
 
 def date_range_slider_set(slider):
     # print(slider==None)
@@ -748,161 +863,409 @@ def date_range_slider_set(slider):
 
     return start_date, end_date
 
+
 def create_weekly_summary():
-    games_df = pd.read_csv('250408games_df.csv')
+    games_df = pd.read_csv("250408games_df.csv")
     games_df = games_df.reset_index()
-    games_df['most_recent_sunday'] = games_df['date'].apply(lambda x: most_recent_sunday(pd.to_datetime(x)))
-    weekly_summary = games_df.groupby(['team_name_abbr','most_recent_sunday'])[['rolling_20', 'rolling_10', 'rolling_15']].mean().reset_index()
+    games_df["most_recent_sunday"] = games_df["date"].apply(
+        lambda x: most_recent_sunday(pd.to_datetime(x))
+    )
+    weekly_summary = (
+        games_df.groupby(["team_name_abbr", "most_recent_sunday"])[
+            ["rolling_20", "rolling_10", "rolling_15"]
+        ]
+        .mean()
+        .reset_index()
+    )
 
     return weekly_summary
 
+
 print(create_weekly_summary())
 
-def create_hi_graph(filtered_df):
+
+# def create_hi_graph(filtered_df):
+#    """Create graph for highs and lows for individual team."""
+#    # pass
+#    fig = go.Figure()
+
+#    fig.add_trace(
+#        go.Scatter(
+#            x=filtered_df["nba_week_"],
+#            y=round(filtered_df["ranking_mean"], 2),
+#            # line=dict(color=color),
+#            name="Mean Ranking",
+#        )
+#    )
+
+#    x = filtered_df["nba_week_"].tolist() + filtered_df["nba_week_"].iloc[::-1].tolist()
+#    y_upper = filtered_df["ranking_max"].tolist()
+#    y_lower = filtered_df["ranking_min"].iloc[::-1].tolist()  # reversed
+#    y = y_upper + y_lower
+
+#    fig.add_trace(
+#        go.Scatter(
+#            x=x,
+#            y=y,
+#            fill="toself",
+#            # fillcolor=hex_to_rgba(color, 0.2),
+#            line=dict(color="rgba(0,0,0,0)"),  # transparent line
+#            hoverinfo="skip",
+#            name="Min-Max Range",
+#        )
+#    )
+
+#    # Optional: Adjust layout
+#    fig.update_layout(
+#        template="plotly_white",
+#        title=f'NBA Power Rankings Visualized: <span style="color: {color};">{team}</span><br><span style="color: gray;font-size: .8em">Highs and Lows of Weekly Rankings</span>',
+#        xaxis_title="Week",
+#        yaxis_title="Ranking",
+#        yaxis=dict(range=(30, 1)),  # since lower rankings are better
+#        showlegend=False,
+#        width=800,
+#        height=700,
+#        hovermode="x unified",
+#        # hovermode='x unified'
+#    )
+
+#    return fig
+
+
+def create_hi_graph(team):
     """Create graph for highs and lows for individual team."""
-    #pass
+    df = df_hi_los()
+    df["sunday"] = df["sunday"] - pd.to_timedelta(-7, unit="D")
+    df = df.loc[df["teamname"] == team]
+
+    base_hover = f"<b>{team.upper()}</b>"
+
+    color = teams.team_color1(team)
+
     fig = go.Figure()
-    
-    fig.add_trace(go.Scatter(
-        x=filtered_df['nba_week_'],
-        y=round(filtered_df['ranking_mean'],2),
-        #line=dict(color=color),
-        name='Mean Ranking'
-    ))
-    
-    x = filtered_df['nba_week_'].tolist() + filtered_df['nba_week_'].iloc[::-1].tolist()
-    y_upper = filtered_df['ranking_max'].tolist()
-    y_lower = filtered_df['ranking_min'].iloc[::-1].tolist()  # reversed
+
+    ## His and Lows
+    x = df["nba_week"].tolist() + df["nba_week"].iloc[::-1].tolist()
+    y_upper = df["ranking_max"].tolist()
+    y_lower = df["ranking_min"].iloc[::-1].tolist()  # reversed
     y = y_upper + y_lower
 
-    fig.add_trace(go.Scatter(
-        x=x,
-        y=y,
-        fill='toself',
-        #fillcolor=hex_to_rgba(color, 0.2),
-        line=dict(color='rgba(0,0,0,0)'),  # transparent line
-        hoverinfo='skip',
-        name='Min-Max Range'
-    ))
-
-    # Optional: Adjust layout
-    fig.update_layout(
-        template='plotly_white',
-        title=f'NBA Power Rankings Visualized: <span style="color: {color};">{team}</span><br><span style="color: gray;font-size: .8em">Highs and Lows of Weekly Rankings</span>',
-        xaxis_title='Week',
-        yaxis_title='Ranking',
-        yaxis=dict(range=(30,1)),  # since lower rankings are better
-        showlegend=False,
-        width=800,
-        hovermode='x unified',
-
-        #hovermode='x unified'
-    )
-    
-    return fig
-
-
-
-def create_record_graph():
-    """Create graph for PR vs running record for individual team."""
-    fig= make_subplots(specs=[[{'secondary_y': True}]])
-
-    team = input_df['teamname'].min()
-
-    if team != 'Brooklyn Nets':
-        color2= teams.team_color2(team)
-    else:
-        color2 = teams.team_color3(team)
-
-
-
-    weekly_summary_filtered = weekly_summary.loc[weekly_summary['team_name_abbr'] == teams.nba_abbrname(team)]
-    fig.add_trace(go.Scatter(
-        x=weekly_summary_filtered['nba_week'],
-        y=round(weekly_summary_filtered['rolling_15'],2),
-        #mode='lines+markers',
-        line=dict(color=color2, dash='dot'),# width=4),
-
-    ), secondary_y=True,),
-    
-    
-    # Main line (mean)
-    fig.add_trace(go.Scatter(
-        x=input_df['nba_week'],
-        y=round(input_df['ranking_mean'],2),
-        line=dict(color=color),
-        name='Mean Ranking'
-    ))
-
-
-    fig.update_layout(
-        title=f'NBA Power Rankings Visualized: <span style="color: {color};">{team}</span><br><span style="font-size: 0.8em; color: gray;">Power Rankings Performance vs. Running Win % (last 15 games)</span>',
-        template='plotly_white',
-        xaxis_title='Week',
-        yaxis_title='Ranking',
-        yaxis=dict(range=(30,0)),  # since lower rankings are better
-        showlegend=False,
-        width=800,
-        hovermode='x unified',
-        #hovermode='x unified'
-        yaxis2=dict(
-            range=(0,1),
-            tickmode='sync'
+    ## Normal Trace
+    fig.add_trace(
+        go.Scatter(
+            x=df["nba_week"],
+            y=round(df["ranking_mean"], 2),
+            line=dict(color=color),
+            name="Mean Rank",
+            text=date_strings[:-1],
+            customdata=list(zip(df["ranking_max"], df["ranking_min"])),
+            hovertemplate=(
+                f"{base_hover}<br>"
+                "<b>date:</b> %{text}<br>"
+                "<b>mean rank:</b> %{y}<br>"
+                "<b>best rank:</b> %{customdata[1]}<br>"
+                "<b>worst rank:</b> %{customdata[0]}<br><extra></extra>"
+            ),
         )
+    )
 
+    ## Min-Max Range Trace
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y,
+            fill="toself",
+            fillcolor=hex_to_rgba(color, 0.2),
+            line=dict(color="rgba(0,0,0,0)"),  # transparent line
+            hoverinfo="skip",
+            name="Min-Max Range",
+        )
+    )
+    fig.update_layout(
+        template="plotly_white",
+        xaxis_title="Week",
+        yaxis_title="Ranking",
+        showlegend=False,
+        # hovermode="x unified",
     )
 
     return fig
 
-def create_rises_graph():
-    """Create graph for rises and falls for individual team."""
-    #pass
-    print('rises')
+
+def create_weekly_summary():
+    games_df = pd.read_csv("250408games_df.csv")
+    games_df = games_df.reset_index()
+    games_df["most_recent_sunday"] = games_df["date"].apply(
+        lambda x: most_recent_sunday(pd.to_datetime(x))
+    )
+    weekly_summary = (
+        games_df.groupby(["team_name_abbr", "most_recent_sunday"])[
+            ["rolling_20", "rolling_10", "rolling_15"]
+        ]
+        .mean()
+        .reset_index()
+    )
+    # week_lookup = wk.set_index('sunday')['nba_week'].to_dict()
+    weekly_summary["nba_week"] = weekly_summary["most_recent_sunday"].map(
+        nba_week_from_date
+    )
+    return weekly_summary
 
 
-def choose_team_graph(radio_options):
-    """Choose what individual team graph to display based on radio input."""
-    if radio_options == 'record':
-        return create_record_graph()
-    if radio_options == 'his-los':
-        return create_hi_graph()
-    if radio_options == 'rises':
-        return create_rises_graph()
+weekly_summary = create_weekly_summary()
+
+
+def create_record_graph(team):
+    df = df_hi_los()
+    df["sunday"] = df["sunday"] - pd.to_timedelta(-7, unit="D")
+    df = df.loc[df["teamname"] == team]
+
+    base_hover = f"<b>{team.upper()}</b>"
+
+    color = teams.team_color1(team)
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+    if team != "Charlotte Hornets":
+        weekly_summary_filtered = weekly_summary.loc[
+            weekly_summary["team_name_abbr"] == teams.nba_abbrname(team)
+        ]
     else:
-        # Return normal graph
-        pass
+        weekly_summary_filtered = weekly_summary.loc[
+            weekly_summary["team_name_abbr"] == "CHO"
+        ]
+    fig.add_trace(
+        go.Scatter(
+            x=df["nba_week"],
+            y=round(df["ranking_mean"], 2),
+            line=dict(width=3),
+            marker=dict(
+                size=6,
+            ),
+            name=teams.nba_abbrname(team),
+            opacity=0.85,
+            marker_color=teams.team_color1(team),
+            customdata=list(zip(date_strings, df.columns)),
+            text=date_strings,
+            hovertemplate=(
+                f"{base_hover}<br>"
+                "<b>date:</b> %{text}<br>"
+                "<b>mean rank:</b> %{y}<br><extra></extra>"
+            ),
+        )
+    ),
+    if team in ("Brooklyn Nets", "San Antonio Spurs"):
+        roll_color = "slategrey"
+    else:
+        roll_color = "black"
+
+    # print(weekly_summary_filtered)
+    fig.add_trace(
+        go.Scatter(
+            x=weekly_summary_filtered["nba_week"],
+            y=round(weekly_summary_filtered["rolling_20"], 2),
+            # mode='lines+markers',
+            # mode="lines+text",
+            # text="Win% over last 20 gms",
+            text=date_strings,  # Adjust text to match previous column
+            line=dict(color=roll_color, dash="dot", width=1.5),  # width=4),
+            hovertemplate=(
+                f"<b>Win% (last 20 gms): {teams.nba_abbrname(team)}</b><br>"
+                "<b>date:</b> %{text}<br>"
+                "<b>win%:</b> %{y}<extra></extra>"
+            ),
+        ),
+        secondary_y=True,
+    ),
+
+    fig.update_layout(
+        template="plotly_white",
+        # template="presentation",
+        font_family="JetBrains Mono",
+        #    xaxis_title="Week",
+        #    yaxis_title="Ranking",
+        yaxis=dict(range=(30, 0)),  # since lower rankings are better
+        showlegend=False,
+        #    width=800,
+        #    hovermode="x unified",
+        # hovermode='x unified',
+        yaxis2=dict(
+            title=dict(
+                text=f"<b>Rolling Team Win%<br>(last 20 gms)</b>",
+                font_size=18,
+            ),
+            range=(0, 1),
+            tickvals=[1, 0.5, 0],
+            tickfont=dict(size=12),
+            # size=12,
+            # tickmode="sync"
+        ),
+    )
+    return fig
+
+
+# def create_record_graph():
+#    """Create graph for PR vs running record for individual team."""
+#    fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+#    team = input_df["teamname"].min()
+
+#    if team != "Brooklyn Nets":
+#        color2 = teams.team_color2(team)
+#    else:
+#        color2 = teams.team_color3(team)
+
+#    weekly_summary_filtered = weekly_summary.loc[
+#        weekly_summary["team_name_abbr"] == teams.nba_abbrname(team)
+#    ]
+#    fig.add_trace(
+#        go.Scatter(
+#            x=weekly_summary_filtered["nba_week"],
+#            y=round(weekly_summary_filtered["rolling_15"], 2),
+#            # mode='lines+markers',
+#            line=dict(color=color2, dash="dot"),  # width=4),
+#        ),
+#        secondary_y=True,
+#    ),
+
+#    # Main line (mean)
+#    fig.add_trace(
+#        go.Scatter(
+#            x=input_df["nba_week"],
+#            y=round(input_df["ranking_mean"], 2),
+#            line=dict(color=color),
+#            name="Mean Ranking",
+#        )
+#    )
+
+#    fig.update_layout(
+#        title=f'NBA Power Rankings Visualized: <span style="color: {color};">{team}</span><br><span style="font-size: 0.8em; color: gray;">Power Rankings Performance vs. Running Win % (last 15 games)</span>',
+#        template="plotly_white",
+#        xaxis_title="Week",
+#        yaxis_title="Ranking",
+#        yaxis=dict(range=(30, 0)),  # since lower rankings are better
+#        showlegend=False,
+#        width=800,
+#        hovermode="x unified",
+#        # hovermode='x unified'
+#        yaxis2=dict(range=(0, 1), tickmode="sync"),
+#    )
+
+#    return fig
+
+
+def team_graph(team):
+
+    df = df_hi_los()
+    df["sunday"] = df["sunday"] - pd.to_timedelta(-7, unit="D")
+    df = df.loc[df["teamname"] == team]
+
+    base_hover = f"<b>{team.upper()}</b>"
+
+    color = teams.team_color1(team)
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+    fig.add_trace(
+        go.Scatter(
+            x=df["nba_week"],
+            y=round(df["ranking_mean"], 2),
+            line=dict(width=3),
+            marker=dict(
+                size=6,
+            ),
+            name=teams.nba_abbrname(team),
+            opacity=0.85,
+            marker_color=teams.team_color1(team),
+            customdata=list(zip(date_strings, df.columns)),
+            text=date_strings,
+            hovertemplate=(
+                f"{base_hover}<br>"
+                "<b>date:</b> %{text}<br>"
+                "<b>mean rank:</b> %{y}<br><extra></extra>"
+            ),
+        )
+    ),
+    fig.update_layout(
+        template="plotly_white",
+        xaxis_title="Week",
+        yaxis_title="Ranking",
+        showlegend=False,
+        # hovermode="x unified",
+    )
+
+    return fig
+
+
+def choose_team_graph(radio_options, team):
+    if team == []:
+        team = "Los Angeles Lakers"
+    # print(radio_options)
+    """Choose what individual team graph to display based on radio input."""
+    if radio_options == "record":
+        try:
+            return create_record_graph(team)
+        except:
+            return create_record_graph("Los Angeles Lakers")
+        # return normal_graph(team)
+    if radio_options == "his-los":
+        try:
+            return create_hi_graph(team)
+        except:
+            return create_hi_graph("Los Angeles Lakers")
+    # if radio_options == "rises":
+    #    try:
+    #        return create_rises_graph(team)
+    #    except:
+    else:
+        try:
+            return team_graph(team)
+        except:
+            return team_graph("Los Angeles Lakers")
+
 
 @app.callback(
+    # League Graph
     Output("pr-graph", "figure"),
     Output("trace-visibility-store", "data"),
     Output("team-dropdown", "disabled"),
     Output("graph-title", "children"),
-    Output("view-output", "children"),
+    # Output("view-output", "children"),
+    # Team Graph
+    Output("team-pr-graph", "figure"),
+    Output("team-graph-title", "children"),
+    Output("team-graph-subtitle", "children"),
+    ## App-Wide Filters
     Input("date-range-slider-wk", "value"),
     Input("rank-radio", "value"),
     Input("week-day-check", "value"),
+    Input("dot-check", "value"),
+    ## League Graph Filters
     Input("all-teams-checkbox", "value"),
     Input("team-dropdown", "value"),
-    Input("graph-layouts-options", "value"),
-    Input("dot-check", "value"),
     Input("pr-graph", "restyleData"),
-    State("trace-visibility-store", "data"),
     State("pr-graph", "figure"),
+    ## Team Graph Filters
+    Input("team-team-dropdown", "value"),
+    Input("graph-layouts-options", "value"),
+    State("trace-visibility-store", "data"),
 )
 def update_graph(
+    ## App-Wide Filters
     date_range_slider,
     rank_radio,
     week_day_check,
+    dot_check,
+    ## League Graph Filters
     all_teams_checkbox,
     team_dropdown,
-    graph_layouts_options,
-    dot_check,
     restyle_data,
-    visibility_state,
     figure,
+    ## Team Graph Filters
+    team_team_dropdown,
+    graph_layouts_options,
+    visibility_state,
 ):
-    
-    
 
     # Step 1: Create df
     df = df_string_for_graph_2()
@@ -928,16 +1291,19 @@ def update_graph(
     if isinstance(team_dropdown, list):
         selected_teams = team_dropdown
 
+    team_select = team_team_dropdown
+    #print(team)
     fig = go.Figure()
-    
-    teams_no = len(filtered_df.index)
-    #print(teams_no)
-    
+    fig2 = choose_team_graph(graph_layouts_options, team_select)
+
+    teams_no = len (filtered_df.index)
+    # print(teams_no)
+
     if teams_no == 1:
         fig = create_hi_graph(filtered_df)
-        #return fig
+        # return fig
 
-    else: 
+    else:
         for team in filtered_df.index:
 
             base_hover = f"<b>{team.upper()}</b>"
@@ -995,7 +1361,7 @@ def update_graph(
         autosize=True,
         height=620,
         xaxis_title="Week",
-        yaxis_title="Ranking",
+        yaxis_title="Mean Rank",
         legend_title="Teams",
         # paper_bgcolor='#FBFBFB',
         plot_bgcolor="white",
@@ -1059,12 +1425,47 @@ def update_graph(
         ),
     )
 
+    fig2.update_layout(
+        autosize=True,
+        height=620,
+        xaxis_title="Week",
+        yaxis_title="Mean Rank",
+        xaxis=dict(
+            domain=[0.05, 0.97],
+            range=[start_week, end_week],
+            autorange=False,
+            tickmode="array",
+            tickvals=weeks_array,
+            ticktext=sundays_str,
+            title=dict(
+                text="<b>Date</b>",
+                # family="JetBrains M",
+                font_size=18,
+            ),
+            tickfont=dict(family="JetBrains Mono", size=12),
+        ),
+        yaxis=dict(
+            domain=[0, 1],
+            range=chart_yrange,
+            dtick=chart_dtick,
+            tickvals=chart_tickvals,
+            title=dict(
+                text="<b>Mean Ranking</b>",
+                font_size=18,
+            ),
+            tickfont=dict(size=12, family="JetBrains Mono"),
+        ),
+        hoverlabel=dict(font=dict(family="JetBrains Mono")),
+    )
+
     if dot_check == ["show"]:
         linemode = "lines+markers"
         fig.update_traces(mode=linemode, marker=dict(size=6))
+        fig2.update_traces(mode=linemode, marker=dict(size=6))
     else:
         linemode = "lines"
         fig.update_traces(mode=linemode)
+        fig2.update_traces(mode=linemode)
 
     for trace in fig.data:
         additional_hover = set_hovertemplate_format(week_day_check)
@@ -1082,9 +1483,36 @@ def update_graph(
             **set_xticks(week_day_check),  # Apply x-ticks settings
         ),
     )
+    
+    fig2.update_layout(
+        yaxis=dict(
+            range=chart_yrange,
+            dtick=chart_dtick,
+            tickvals=chart_tickvals,
+            # title_standoff=title_standoff
+        ),
+        xaxis=dict(
+            **set_xticks(week_day_check),  # Apply x-ticks settings
+        ),
+    )
+    try:
+        team_graph_title, team_graph_subtitle = team_select, show_team_graph_title(team_select, graph_layouts_options)[1]
+        # print(graph_title)
+    except:
+        team_graph_title = "Power Rankings: Los Angeles Lakers"
+        team_graph_subtitle = "subtitle"
 
-    #pio.write_html(fig, file="nba_plot.html", full_html=False)
-    return fig, [trace.visible for trace in fig.data], dropdown_disabled, graph_title, graph_layouts_options
+    # pio.write_html(fig, file="nba_plot.html", full_html=False)
+    return (
+        fig,
+        [trace.visible for trace in fig.data],
+        dropdown_disabled,
+        graph_title,
+        # graph_layouts_options,
+        fig2,
+        team_graph_title,
+        team_graph_subtitle,
+    )
 
 
 if __name__ == "__main__":
